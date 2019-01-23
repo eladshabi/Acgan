@@ -1,6 +1,7 @@
 import numpy as np
 from datetime import datetime, timedelta
 from GanLogger import Logger
+import os
 
 
 class GanTrainer:
@@ -32,7 +33,7 @@ class GanTrainer:
 
     def load_dataset(self):
         try:
-            return self.data_loader(os.path.join(self.root_path ,'data'))
+            return self.data_loader(os.path.join(self.root_path ,'data/'))
 
         except:
             Emsg = 'Error occurred during loading the data'
