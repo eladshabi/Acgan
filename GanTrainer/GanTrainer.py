@@ -32,7 +32,7 @@ class GanTrainer:
 
     def load_dataset(self):
         try:
-            return self.data_loader(self.root_path + "Acgan/GanTrainer/data/")
+            return self.data_loader(os.path.join(self.root_path ,'data/'))
 
         except:
             Emsg = 'Error occurred during loading the data'
