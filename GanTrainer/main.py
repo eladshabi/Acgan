@@ -10,10 +10,6 @@ if __name__ == "__main__":
     training_time = int(sys.argv[1])
     batch_size = int(sys.argv[2])
 
-
-    print(training_time,batch_size)
-    exit(1)
-
     # Create the Ac_gan model
     ac_gan = ACGAN(28, 28, 1, 10, 100)
 
