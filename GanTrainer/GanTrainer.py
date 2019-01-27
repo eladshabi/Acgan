@@ -5,7 +5,7 @@ import os
 
 
 class GanTrainer:
-    def __init__(self, gan_model, root_path, data_loader):
+    def __init__(self, gan_model, root_path, data_loader, data_path):
 
         ###############
         #     GAN     #
@@ -16,10 +16,13 @@ class GanTrainer:
         self.generator = gan_model.generator
 
         self.gan = gan_model
-
+        
         self.X_train = None
         self.y_train = None
-
+        
+        self.data_path = data_path
+        
+        
         # Data loader:  needs to have load_data(path) function and has to normalize the data to [-1,1]
         # range as float32 np array
         # path: the Dataset dir
@@ -33,7 +36,7 @@ class GanTrainer:
 
     def load_dataset(self):
         try:
-            return self.data_loader(os.path.join(self.root_path ,'data/'))
+            return self.data_loader(os.path.join(data_path))
 
         except:
             Emsg = 'Error occurred during loading the data'
