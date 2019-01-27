@@ -86,8 +86,8 @@ class GanTrainer:
         valid = np.ones((batch_size, 1))
         fake = np.zeros((batch_size, 1))
 
-#         batch_learned_in_epoch = 0
-#         epoch = 0
+        batch_learned = 0
+        epoch = 0
 
         start_time = datetime.now()
         end_time = start_time + timedelta(minutes=time)
@@ -108,11 +108,16 @@ class GanTrainer:
             
             d_loss, g_loss = run_batch(valid, fake, batch_size)
             self.logger.write_losses(d_loss, g_loss)
+            batch_learned += batch_size
             
             if datetime.now() > saving_time:
                 self.logger.save_images(self.generator)
                 self.logger.save_model(self.generator, self.discriminator)
                 saving_time = datetime.now() + timedelta(minutes=saving_step_time)
+            
+            if batch_learned % batch_size == 0:
+                epoch +=1
+                print("Epoch: ", epoch) 
 
             
 
