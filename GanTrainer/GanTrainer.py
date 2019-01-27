@@ -115,7 +115,7 @@ class GanTrainer:
                 self.logger.save_model(self.generator, self.discriminator)
                 saving_time = datetime.now() + timedelta(minutes=saving_step_time)
             
-            if batch_learned % batch_size == 0:
+            if batch_size % batch_learned == 0:
                 epoch +=1
                 print("Epoch: ", epoch) 
 
