@@ -1,17 +1,18 @@
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
-from keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
-from keras.layers.advanced_activations import LeakyReLU
-from keras.layers.convolutional import UpSampling2D, Conv2D
-from keras.models import Sequential, Model
-from keras.optimizers import Adam
-from keras.backend import set_floatx as float_type
+from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
+from tensorflow.keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
+from tensorflow.keras.layers import LeakyReLU
+from tensorflow.keras.layers import UpSampling2D, Conv2D
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import model_from_json
+from tensorflow.keras.backend import set_floatx
 
 
 class ACGAN():
     def __init__(self,rows,cols,channels,classes,latent,tpu = False):
 
         if tpu:
-            float_type('float16')
+            set_floatx('float16')
 
         # Input shape
         self.img_rows = rows
