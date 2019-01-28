@@ -24,7 +24,7 @@ class GanTrainer:
         
         
         # Data loader:  needs to have load_data(path) function and has to normalize the data to [-1,1]
-        # range as float32 np array
+        # range as float32/16 np array
         # path: the Dataset dir
         # Return: (X_train, y_train)
         self.data_loader = data_loader

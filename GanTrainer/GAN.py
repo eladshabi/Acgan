@@ -9,9 +9,9 @@ from keras.backend import set_floatx as float_type
 
 class ACGAN():
     def __init__(self,rows,cols,channels,classes,latent,tpu = False):
+
         if tpu:
             float_type('float16')
-
 
         # Input shape
         self.img_rows = rows
