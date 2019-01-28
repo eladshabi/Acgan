@@ -34,15 +34,15 @@ class GanTrainer:
 
         self.logger = Logger(root_path)
 
-    def load_dataset(self):
+    def load_dataset(self,tpu):
         try:
-            return self.data_loader(os.path.join(self.data_path))
+            return self.data_loader(os.path.join(self.data_path),tpu)
 
         except:
             Emsg = 'Error occurred during loading the data'
             self.logger.write_warn_to_log(Emsg)
 
-    def train_gan_by_time(self, time, batch_size=128):
+    def train_gan_by_time(self, time, batch_size=128,tpu= False):
 
         def train_discriminator(noise, sampled_labels, idx, imgs, valid_l, fake_l):
             # Generate a half batch of new images
@@ -77,7 +77,7 @@ class GanTrainer:
 
             return dis_loss, gen_loss
 
-        self.X_train, self.y_train = self.load_dataset()
+        self.X_train, self.y_train = self.load_dataset(tpu)
 
         self.logger.write_info_to_log('Dataset loaded')
 
