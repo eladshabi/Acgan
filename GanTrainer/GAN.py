@@ -4,10 +4,15 @@ from keras.layers.advanced_activations import LeakyReLU
 from keras.layers.convolutional import UpSampling2D, Conv2D
 from keras.models import Sequential, Model
 from keras.optimizers import Adam
+from keras.backend import set_floatx as float_type
 
 
 class ACGAN():
-    def __init__(self,rows,cols,channels,classes,latent):
+    def __init__(self,rows,cols,channels,classes,latent,tpu = False):
+        if tpu:
+            float_type('float16')
+
+
         # Input shape
         self.img_rows = rows
         self.img_cols = cols
