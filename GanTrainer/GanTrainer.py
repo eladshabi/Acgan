@@ -35,9 +35,9 @@ class GanTrainer:
 
         self.logger = Logger(root_path)
 
-    def load_dataset(self):
+    def load_dataset(self,tpu):
         try:
-            return self.data_loader(os.path.join(self.data_path))
+            return self.data_loader(os.path.join(self.data_path),tpu)
 
         except:
             Emsg = 'Error occurred during loading the data'
@@ -62,8 +62,6 @@ class GanTrainer:
             idx = np.random.randint(0, train_size, batch)
             imgs = self.X_train[idx]
 
-            if tpu:
-                imgs = cast(imgs, tf.float16)
 
             # Sample noise as generator input
             noise = np.random.normal(0, 1, (batch, self.gan.latent_dim))
@@ -81,7 +79,7 @@ class GanTrainer:
 
             return dis_loss, gen_loss
 
-        self.X_train, self.y_train = self.load_dataset()
+        self.X_train, self.y_train = self.load_dataset(tpu)
 
 
         self.logger.write_info_to_log('Dataset loaded')
