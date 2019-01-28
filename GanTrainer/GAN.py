@@ -1,14 +1,14 @@
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
 from tensorflow.keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
 from tensorflow.keras.layers import LeakyReLU
-from tensorflow.keras.layers import UpSampling2D, Conv2D
+from tensorflow.keras.layers import UpSampling2D, Conv2D, InputSpec
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.backend import set_floatx,set_epsilon
 
 from tensorflow.keras.layers import BatchNormalization, Layer
 from tensorflow.keras.initializers import Initializer
-from tensorflow.keras import initializers, regularizers
+from tensorflow.keras import initializers, regularizers,constraints
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
 from tensorflow.keras import backend as K
