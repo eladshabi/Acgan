@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import random
-
+import tensorflow as tf
 
 def get_name(name):
     return dict(
@@ -40,7 +40,8 @@ def load_data(path,tpu=False):
 
     images, labels = zip(*data)
     if tpu:
-        images = np.array(images).astype(np.float16)
+        #images = np.array(images).astype(np.float16)
+        images = tf.image.convert_image_dtype(images,tf.float16)
     else:
         images = np.array(images).astype(np.float32)
     images = (images - 127.5) / 127.5
