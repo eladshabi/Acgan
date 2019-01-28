@@ -42,6 +42,7 @@ def load_data(path,tpu=False):
     images, labels = zip(*data)
 
     if tpu:
+        print("in float16")
         images = np.array(images).astype(np.float16)
     else:
         images = np.array(images).astype(np.float32)
