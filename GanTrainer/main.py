@@ -37,14 +37,14 @@ if __name__ == "__main__":
         os.makedirs(folder_name)
 
         # Create the Ac_gan model
-        ac_gan = ACGAN(28, 28, 1, 10, 100)
+        ac_gan = ACGAN(28, 28, 1, 10, 100,tpu)
 
         # Create the Gan trainer object and set the data loader function with the data folder path.
 
-        gan_trainer = GanTrainer(ac_gan, folder_name, load_data,data_path,tpu)
+        gan_trainer = GanTrainer(ac_gan, folder_name, load_data,data_path)
 
         # Train the model for specific time and custom batch size
-        gan_trainer.train_gan_by_time(training_time, batch)
+        gan_trainer.train_gan_by_time(training_time, batch,tpu)
 
 
 
