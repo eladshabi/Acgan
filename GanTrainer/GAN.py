@@ -4,7 +4,6 @@ from tensorflow.keras.layers import LeakyReLU
 from tensorflow.keras.layers import UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import model_from_json
 from tensorflow.keras.backend import set_floatx
 
 
