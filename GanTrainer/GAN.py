@@ -11,6 +11,8 @@ from tensorflow.keras.initializers import Initializer
 from tensorflow.keras import initializers
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
+from tensorflow.keras import backend as K
+
 
 # custom initializers to force float32
 class Ones32(Initializer):
