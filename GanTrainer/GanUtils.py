@@ -1,6 +1,5 @@
 import os
 import numpy as np
-
 import random
 
 
@@ -21,7 +20,7 @@ def get_name(name):
         }).get(name)
 
 
-def load_data(path,tpu=False):
+def load_data(path):
     images = []
     labels = []
 
@@ -41,11 +40,7 @@ def load_data(path,tpu=False):
 
     images, labels = zip(*data)
 
-    if tpu:
-        print("in float16")
-        images = np.array(images).astype(np.float16)
-    else:
-        images = np.array(images).astype(np.float32)
+    images = np.array(images).astype(np.float32)
     images = (images - 127.5) / 127.5
     images = np.expand_dims(images, axis=3)
     labels = np.array(labels)

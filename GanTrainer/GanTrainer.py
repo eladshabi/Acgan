@@ -2,7 +2,8 @@ import numpy as np
 from datetime import datetime, timedelta
 from GanLogger import Logger
 import os
-
+import tensorflow as tf
+from tensorflow.keras.backend import cast
 
 class GanTrainer:
     def __init__(self, gan_model, root_path, data_loader, data_path):
@@ -34,9 +35,9 @@ class GanTrainer:
 
         self.logger = Logger(root_path)
 
-    def load_dataset(self,tpu):
+    def load_dataset(self):
         try:
-            return self.data_loader(os.path.join(self.data_path),tpu)
+            return self.data_loader(os.path.join(self.data_path))
 
         except:
             Emsg = 'Error occurred during loading the data'
@@ -77,7 +78,10 @@ class GanTrainer:
 
             return dis_loss, gen_loss
 
-        self.X_train, self.y_train = self.load_dataset(tpu)
+        self.X_train, self.y_train = self.load_dataset()
+
+        if tpu:
+            self.X_train =cast(self.X_train,tf.float16)
 
         self.logger.write_info_to_log('Dataset loaded')
 
