@@ -4,7 +4,7 @@ from tensorflow.keras.layers import LeakyReLU
 from tensorflow.keras.layers import UpSampling2D, Conv2D
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.backend import set_floatx
+from tensorflow.keras.backend import set_floatx,set_epsilon
 
 
 class ACGAN():
@@ -12,6 +12,7 @@ class ACGAN():
 
         if tpu:
             set_floatx('float16')
+            set_epsilon(1e-4)
 
         # Input shape
         self.img_rows = rows

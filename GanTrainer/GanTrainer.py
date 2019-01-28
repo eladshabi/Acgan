@@ -2,8 +2,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from GanLogger import Logger
 import os
-import tensorflow as tf
-from tensorflow.keras.backend import cast
+
 
 class GanTrainer:
     def __init__(self, gan_model, root_path, data_loader, data_path):
