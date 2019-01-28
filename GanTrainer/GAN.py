@@ -8,6 +8,7 @@ from tensorflow.keras.backend import set_floatx,set_epsilon
 
 from tensorflow.keras.layers import BatchNormalization, Layer
 from tensorflow.keras.initializers import Initializer
+from tensorflow.keras import initializers
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
 
