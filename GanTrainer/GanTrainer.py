@@ -61,6 +61,8 @@ class GanTrainer:
             # Select a random batch of images
             idx = np.random.randint(0, train_size, batch)
             imgs = self.X_train[idx]
+            if tpu:
+                imgs =cast(imgs,tf.float16)
 
 
             # Sample noise as generator input
