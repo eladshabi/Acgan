@@ -14,7 +14,9 @@ from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_tra
 from tensorflow.keras import backend as K
 import tensorflow
 
-
+class DoubleGDOptimizer(tf.train.GradientDescentOptimizer):
+  def _valid_dtypes(self):
+    return set([tf.float16, tf.float32])
 
 # custom initializers to force float32
 class Ones32(Initializer):
@@ -221,7 +223,7 @@ class ACGAN():
         self.latent_dim = latent
 
         #optimizer = Adam(0.0002, 0.5)
-        optimizer = SGD(0.001, 0.5)
+        optimizer = DoubleGDOptimizer(0.001, 0.5)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
