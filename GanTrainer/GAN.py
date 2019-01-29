@@ -14,8 +14,6 @@ from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_tra
 from tensorflow.keras import backend as K
 
 
-
-
 # custom initializers to force float32
 class Ones32(Initializer):
     def __call__(self, shape, dtype=None):
@@ -35,10 +33,10 @@ class BatchNormalizationF16(Layer):
                  epsilon=1e-3,
                  center=True,
                  scale=True,
-                 beta_initializer=Zeros32,
-                 gamma_initializer=Ones32,
-                 moving_mean_initializer=Zeros32,
-                 moving_variance_initializer=Ones32,
+                 beta_initializer='zeros',
+                 gamma_initializer='ones',
+                 moving_mean_initializer='zeros',
+                 moving_variance_initializer='ones',
                  beta_regularizer=None,
                  gamma_regularizer=None,
                  beta_constraint=None,
@@ -219,6 +217,8 @@ class ACGAN():
         self.latent_dim = latent
 
         optimizer = Adam(0.0002, 0.5)
+
+
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
         # Build and compile the discriminator
