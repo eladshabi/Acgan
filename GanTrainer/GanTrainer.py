@@ -81,7 +81,8 @@ class GanTrainer:
             return dis_loss, gen_loss
 
         self.X_train, self.y_train = self.load_dataset(tpu)
-
+        print('X_train type is: ' + self.X_train.dtype)
+        print('y_train type is: ' + self.X_train.dtype)
 
         self.logger.write_info_to_log('Dataset loaded')
 
@@ -100,16 +101,7 @@ class GanTrainer:
         saving_time = start_time + timedelta(minutes=saving_step_time)
 
         while datetime.now() < end_time:
-#             if batch_learned_in_epoch + batch_size < train_size:
-#                 d_loss, g_loss = run_batch(valid, fake, batch_size)
-#                 batch_learned_in_epoch += batch_size
 
-#             else:
-#                 d_loss, g_loss = run_batch(valid, fake, train_size - batch_learned_in_epoch)
-#                 batch_learned_in_epoch = 0
-#                 epoch += 1
-            
-            
             d_loss, g_loss = run_batch(valid, fake, batch_size)
             self.logger.write_losses(d_loss, g_loss)
             batch_learned += batch_size
