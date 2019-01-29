@@ -273,7 +273,7 @@ class ACGAN():
         model.summary()
 
         noise = Input(shape=(self.latent_dim,))
-        label = Input(shape=(1,), dtype='int32')
+        label = Input(shape=(1,), dtype='float16')
         label_embedding = Flatten()(Embedding(self.num_of_classes, 100)(label))
 
         model_input = multiply([noise, label_embedding])
