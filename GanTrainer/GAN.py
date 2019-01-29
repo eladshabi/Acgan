@@ -3,7 +3,7 @@ from tensorflow.keras.layers import BatchNormalization, Activation, Embedding, Z
 from tensorflow.keras.layers import LeakyReLU
 from tensorflow.keras.layers import UpSampling2D, Conv2D,InputSpec
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, Adadelta
 from tensorflow.keras.backend import set_floatx,set_epsilon
 
 from tensorflow.keras.layers import BatchNormalization, Layer
@@ -220,7 +220,8 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        #optimizer = Adam(0.0002, 0.5)
+        optimizer = Adadelta(0.0002, 0.5)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
