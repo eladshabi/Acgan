@@ -12,6 +12,7 @@ from tensorflow.keras import initializers, regularizers,constraints
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
 from tensorflow.keras import backend as K
+import tensorflow
 
 
 # custom initializers to force float32
@@ -275,6 +276,7 @@ class ACGAN():
         noise = Input(shape=(self.latent_dim,))
         label = Input(shape=(1,), dtype='float16')
         label_embedding = Flatten()(Embedding(self.num_of_classes, 100)(label))
+        label_embedding = K.cast(label_embedding,tensorflow.float16)
 
         model_input = multiply([noise, label_embedding])
         img = model(model_input)
