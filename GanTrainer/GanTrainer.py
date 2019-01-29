@@ -51,6 +51,7 @@ class GanTrainer:
             fake_labels = sampled_labels
             print('valid_l type is: ' + str(valid_l.dtype))
             print('img_labels type is: ' + str(img_labels.dtype))
+            print('imgs type is: ' + str(imgs.dtype))
 
             # Train the discriminator
             d_loss_real = self.discriminator.train_on_batch(imgs, [valid_l, img_labels])
