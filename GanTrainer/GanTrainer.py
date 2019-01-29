@@ -81,8 +81,8 @@ class GanTrainer:
             return dis_loss, gen_loss
 
         self.X_train, self.y_train = self.load_dataset(tpu)
-        print('X_train type is: ' + self.X_train.dtype)
-        print('y_train type is: ' + self.X_train.dtype)
+        print('X_train type is: ' + str(self.X_train.dtype))
+        print('y_train type is: ' + str(self.X_train.dtype))
 
         self.logger.write_info_to_log('Dataset loaded')
 
