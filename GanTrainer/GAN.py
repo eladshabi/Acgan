@@ -34,8 +34,8 @@ class BatchNormalizationF16(Layer):
                  epsilon=1e-3,
                  center=True,
                  scale=True,
-                 beta_initializer='zeros',
-                 gamma_initializer='ones',
+                 beta_initializer=Zeros32(),
+                 gamma_initializer=Ones32(),
                  moving_mean_initializer='zeros',
                  moving_variance_initializer='ones',
                  beta_regularizer=None,
@@ -276,7 +276,7 @@ class ACGAN():
         noise = Input(shape=(self.latent_dim,))
         label = Input(shape=(1,), dtype='float16')
         label_embedding = Flatten()(Embedding(self.num_of_classes, 100)(label))
-        label_embedding = K.cast(label_embedding, dtype='float32')
+        label_embedding = K.cast(label_embedding, dtype='float16')
 
         model_input = multiply([noise, label_embedding])
         img = model(model_input)
