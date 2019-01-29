@@ -10,12 +10,10 @@ from tensorflow.keras.layers import BatchNormalization, Layer
 from tensorflow.keras.initializers import Initializer
 from tensorflow.keras import initializers, regularizers,constraints
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
-
+from tfutil import Optimizer
 from tensorflow.keras import backend as K
 
 import numpy as np
-
-
 
 
 
