@@ -18,11 +18,13 @@ import tensorflow
 # custom initializers to force float32
 class Ones32(Initializer):
     def __call__(self, shape, dtype=None):
+        print('in one')
         return K.constant(1, shape=shape, dtype='float32')
 
 
 class Zeros32(Initializer):
     def __call__(self, shape, dtype=None):
+        print('in zero')
         return K.constant(0, shape=shape, dtype='float32')
 
 
@@ -34,8 +36,8 @@ class BatchNormalizationF16(Layer):
                  epsilon=1e-3,
                  center=True,
                  scale=True,
-                 beta_initializer=Zeros32(),
-                 gamma_initializer=Ones32(),
+                 beta_initializer='zeros',
+                 gamma_initializer='ones',
                  moving_mean_initializer='zeros',
                  moving_variance_initializer='ones',
                  beta_regularizer=None,
