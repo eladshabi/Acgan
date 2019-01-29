@@ -15,9 +15,6 @@ from tensorflow.keras import backend as K
 import tensorflow
 
 
-class DoubleAdam(tf.keras.optimizers.Adam):
-  def _valid_dtypes(self):
-    return set([tf.float16, tf.float32])
 
 # custom initializers to force float32
 class Ones32(Initializer):
@@ -223,8 +220,8 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        #optimizer = Adam(0.0002, 0.5)
-        optimizer = DoubleAdam(0.0002, 0.5)
+        optimizer = Adam(0.0002, 0.5)
+
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
         # Build and compile the discriminator
@@ -280,7 +277,7 @@ class ACGAN():
         model.summary()
 
         noise = Input(shape=(self.latent_dim,))
-        label = Input(shape=(1,), dtype='float16')
+        label = Input(shape=(1,), dtype='int32')
         label_embedding = Flatten()(Embedding(self.num_of_classes, 100)(label))
         label_embedding = K.cast(label_embedding, dtype='float16')
 
