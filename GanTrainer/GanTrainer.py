@@ -49,6 +49,8 @@ class GanTrainer:
             gen_imgs = self.generator.predict([noise, sampled_labels])
             img_labels = self.y_train[idx]
             fake_labels = sampled_labels
+            print('valid_l type is: ' + str(valid_l.dtype))
+            print('img_labels type is: ' + str(img_labels.dtype))
 
             # Train the discriminator
             d_loss_real = self.discriminator.train_on_batch(imgs, [valid_l, img_labels])
@@ -81,8 +83,7 @@ class GanTrainer:
             return dis_loss, gen_loss
 
         self.X_train, self.y_train = self.load_dataset(tpu)
-        print('X_train type is: ' + str(self.X_train.dtype))
-        print('y_train type is: ' + str(self.y_train.dtype))
+
 
         self.logger.write_info_to_log('Dataset loaded')
 
