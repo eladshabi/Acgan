@@ -85,9 +85,7 @@ class GanTrainer:
 
 
         self.logger.write_info_to_log('Dataset loaded')
-        for img in self.X_train:
-            if img.dtype != np.float16:
-                print('found')
+
 
         train_size = self.X_train.shape[0]
 
