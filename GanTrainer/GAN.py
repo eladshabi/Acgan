@@ -12,60 +12,18 @@ from tensorflow.keras import initializers, regularizers,constraints
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
 from tensorflow.keras import backend as K
-import tensorflow
 
 
-class SGDMultiType(SGD):
 
-    def get_updates(self, loss, params):
-        grads = self.get_gradients(loss, params)
-        self.updates = [K.update_add(self.iterations, 1)]
-
-        lr = self.lr
-        if self.initial_decay > 0:
-            lr = lr * (1. / (1. + self.decay * K.cast(self.iterations,
-                                                      K.dtype(self.decay))))
-
-        # Adjusting learning rate for matching each weight type
-        learning_rates = [K.cast(lr, K.dtype(p)) for p in params]
-
-        # momentum
-        shapes = [K.int_shape(p) for p in params]
-
-        # adding custom types to moments
-        moments = [K.zeros(shape, dtype=K.dtype(p)) for p, shape in zip(params, shapes)]
-        self.weights = [self.iterations] + moments
-
-        # adjusting "self.momentum" value to weight types
-        momentums = [K.cast(self.momentum, K.dtype(p)) for p in params]
-
-        # using the typed learning rate and momentums
-        for p, g, m, lr, momentum in zip(params, grads, moments, learning_rates, momentums):
-            v = momentum * m - lr * g  # velocity
-            self.updates.append(K.update(m, v))
-
-            if self.nesterov:
-                new_p = p + momentum * v - lr * g
-            else:
-                new_p = p + v
-
-            # Apply constraints.
-            if getattr(p, 'constraint', None) is not None:
-                new_p = p.constraint(new_p)
-
-            self.updates.append(K.update(p, new_p))
-        return self.updates
 
 # custom initializers to force float32
 class Ones32(Initializer):
     def __call__(self, shape, dtype=None):
-        print('in one')
         return K.constant(1, shape=shape, dtype='float32')
 
 
 class Zeros32(Initializer):
     def __call__(self, shape, dtype=None):
-        print('in zero')
         return K.constant(0, shape=shape, dtype='float32')
 
 
@@ -77,10 +35,10 @@ class BatchNormalizationF16(Layer):
                  epsilon=1e-3,
                  center=True,
                  scale=True,
-                 beta_initializer='zeros',
-                 gamma_initializer='ones',
-                 moving_mean_initializer='zeros',
-                 moving_variance_initializer='ones',
+                 beta_initializer=Zeros32,
+                 gamma_initializer=Ones32,
+                 moving_mean_initializer=Zeros32,
+                 moving_variance_initializer=Ones32,
                  beta_regularizer=None,
                  gamma_regularizer=None,
                  beta_constraint=None,
@@ -260,9 +218,7 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        #optimizer = Adam(0.0002, 0.5)
-        optimizer = SGDMultiType(0.001, 0.5)
-
+        optimizer = Adam(0.0002, 0.5)
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
         # Build and compile the discriminator
