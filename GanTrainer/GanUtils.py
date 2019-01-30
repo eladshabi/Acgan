@@ -43,7 +43,8 @@ def load_data(path,tpu=False):
         images = np.array(images).astype(np.float16)
     else:
         images = np.array(images).astype(np.float32)
-    images = (images - 127.5) / 127.5
+    #images = (images - 127.5) / 127.5
+    images = images / 255
     images = np.expand_dims(images, axis=3)
     labels = np.array(labels).astype(np.float16)
     labels = labels.reshape(-1, 1)
