@@ -91,8 +91,8 @@ class GanTrainer:
 
         # valid = np.ones((batch_size, 1)).astype(np.float16)
         # fake = np.zeros((batch_size, 1)).astype(np.float16)
-        valid = np.ones((batch_size, 1))
-        fake = np.zeros((batch_size, 1))
+        valid = np.ones((batch_size, 1)).astype(np.int32)
+        fake = np.zeros((batch_size, 1)).astype(np.int32)
 
         batch_learned = 0
         epoch = 0
