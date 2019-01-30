@@ -237,7 +237,7 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        optimizer = Adam(0.0002, 0.5,epsilon=1e-4)
         #optimizer = tf.train.MomentumOptimizer(
             #learning_rate=0.0002, momentum=0.9)
         #optimizer = tensorflow.contrib.tpu.CrossShardOptimizer(optimizer)
