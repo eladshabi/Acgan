@@ -202,7 +202,7 @@ class BatchNormalizationF16(Layer):
         return input_shape
 
 class ACGAN():
-    def __init__(self,rows,cols,channels,classes,latent,tpu = False):
+    def __init__(self,rows,cols,channels,classes,latent, tpu = False):
 
         if tpu:
             set_floatx('float16')
@@ -219,7 +219,9 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        #optimizer = Adam(0.0002, 0.5)
+        optimizer = tf.train.MomentumOptimizer(
+            learning_rate=0.0002, momentum=0.9)
         optimizer = tensorflow.contrib.tpu.CrossShardOptimizer(optimizer)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
