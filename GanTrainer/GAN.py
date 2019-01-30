@@ -322,8 +322,8 @@ class ACGAN():
         validity = Dense(1, activation="sigmoid")(features)
         label = Dense(self.num_of_classes, activation="softmax")(features)
 
-        validity = tensorflow.keras.backend.cast(validity,tensorflow.float32)
-        label = tensorflow.keras.backend.cast(label, tensorflow.float32)
+        # validity = tensorflow.keras.backend.cast(validity,tensorflow.float32)
+        # label = tensorflow.keras.backend.cast(label, tensorflow.float32)
         return Model(img, [validity, label])
 
 
