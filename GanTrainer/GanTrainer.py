@@ -22,7 +22,6 @@ class GanTrainer:
         
         self.data_path = data_path
         
-        
         # Data loader:  needs to have load_data(path) function and has to normalize the data to [-1,1]
         # range as float32/16 np array
         # path: the Dataset dir
@@ -83,14 +82,10 @@ class GanTrainer:
 
         self.X_train, self.y_train = self.load_dataset(tpu)
 
-
         self.logger.write_info_to_log('Dataset loaded')
-
 
         train_size = self.X_train.shape[0]
 
-        # valid = np.ones((batch_size, 1)).astype(np.float16)
-        # fake = np.zeros((batch_size, 1)).astype(np.float16)
         valid = np.ones((batch_size, 1)).astype(np.int32)
         fake = np.zeros((batch_size, 1)).astype(np.int32)
 

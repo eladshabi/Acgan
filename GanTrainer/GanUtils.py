@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import random
-import tensorflow as tf
+
 
 def get_name(name):
     return dict(
@@ -20,7 +20,7 @@ def get_name(name):
         }).get(name)
 
 
-def load_data(path,tpu=False):
+def load_data(path, tpu=False):
     images = []
     labels = []
 
@@ -35,18 +35,15 @@ def load_data(path,tpu=False):
                 labels.append(c_num)
 
     data = list(zip(images, labels))
-
     random.shuffle(data)
-
     images, labels = zip(*data)
+
     if tpu:
         images = np.array(images).astype(np.float16)
     else:
         images = np.array(images).astype(np.float32)
     images = (images - 127.5) / 127.5
-    #images = images / 255
     images = np.expand_dims(images, axis=3)
-    #labels = np.array(labels).astype(np.float16)
     labels = np.array(labels).astype(np.int32)
     labels = labels.reshape(-1, 1)
     return images, labels
