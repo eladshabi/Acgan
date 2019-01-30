@@ -12,8 +12,8 @@ from tensorflow.keras import initializers, regularizers,constraints
 from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
 
 from tensorflow.keras import backend as K
-from tfutil import *
 import numpy as np
+import tensorflow
 
 
 
@@ -219,8 +219,8 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        #optimizer = Adam(0.0002, 0.5)
-        optimizer = Optimizer()
+        optimizer = Adam(0.0002, 0.5)
+        optimizer = tensorflow.contrib.tpu.CrossShardOptimizer(optimizer)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
