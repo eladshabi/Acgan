@@ -89,8 +89,10 @@ class GanTrainer:
 
         train_size = self.X_train.shape[0]
 
-        valid = np.ones((batch_size, 1)).astype(np.float16)
-        fake = np.zeros((batch_size, 1)).astype(np.float16)
+        # valid = np.ones((batch_size, 1)).astype(np.float16)
+        # fake = np.zeros((batch_size, 1)).astype(np.float16)
+        valid = np.ones((batch_size, 1))
+        fake = np.zeros((batch_size, 1))
 
         batch_learned = 0
         epoch = 0
