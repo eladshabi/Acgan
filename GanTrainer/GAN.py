@@ -219,10 +219,10 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        #optimizer = Adam(0.0002, 0.5)
-        optimizer = tf.train.MomentumOptimizer(
-            learning_rate=0.0002, momentum=0.9)
-        optimizer = tensorflow.contrib.tpu.CrossShardOptimizer(optimizer)
+        optimizer = Adam(0.0002, 0.5)
+        #optimizer = tf.train.MomentumOptimizer(
+            #learning_rate=0.0002, momentum=0.9)
+        #optimizer = tensorflow.contrib.tpu.CrossShardOptimizer(optimizer)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
@@ -322,6 +322,8 @@ class ACGAN():
         validity = Dense(1, activation="sigmoid")(features)
         label = Dense(self.num_of_classes, activation="softmax")(features)
 
+        validity = tensorflow.keras.backend.cast(validity,tensorflow.float32)
+        label = tensorflow.keras.backend.cast(label, tensorflow.float32)
         return Model(img, [validity, label])
 
 
