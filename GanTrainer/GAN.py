@@ -1,19 +1,37 @@
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
-from tensorflow.keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
-from tensorflow.keras.layers import LeakyReLU
-from tensorflow.keras.layers import UpSampling2D, Conv2D,InputSpec
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.optimizers import Adam, Adadelta,SGD
-from tensorflow.keras.backend import set_floatx,set_epsilon
-
-from tensorflow.keras.layers import BatchNormalization, Layer
-from tensorflow.keras.initializers import Initializer
-from tensorflow.keras import initializers, regularizers,constraints
-from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
-
-from tensorflow.keras import backend as K
+# from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
+# from tensorflow.keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
+# from tensorflow.keras.layers import LeakyReLU
+# from tensorflow.keras.layers import UpSampling2D, Conv2D,InputSpec
+# from tensorflow.keras.models import Sequential, Model
+# from tensorflow.keras.optimizers import Adam, Adadelta,SGD
+# from tensorflow.keras.backend import set_floatx,set_epsilon
+#
+# from tensorflow.keras.layers import BatchNormalization, Layer
+# from tensorflow.keras.initializers import Initializer
+# from tensorflow.keras import initializers, regularizers,constraints
+# from keras.backend.tensorflow_backend import tf, _regular_normalize_batch_in_training
+# from tensorflow.keras import backend as K
 import numpy as np
 import tensorflow
+
+
+
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply
+from keras.layers import BatchNormalization, Activation, Embedding, ZeroPadding2D
+from keras.layers import LeakyReLU
+from keras.layers import UpSampling2D, Conv2D,InputSpec
+from keras.models import Sequential, Model
+from keras.optimizers import Adam, Adadelta,SGD
+from keras.backend import set_floatx,set_epsilon
+
+from keras.layers import BatchNormalization, Layer
+from keras.initializers import Initializer
+from keras import initializers, regularizers,constraints
+from keras.backend.tensorflow_backend import _regular_normalize_batch_in_training
+from keras import backend as K
+import numpy as np
+import tensorflow
+
 
 
 
@@ -260,18 +278,18 @@ class ACGAN():
 
         model.add(Dense(128 * 7 * 7, activation="relu", input_dim=self.latent_dim))
         model.add(Reshape((7, 7, 128)))
-        #model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=0.8))
         #model.add(BatchNormalizationF16(momentum=0.8))
         model.add(UpSampling2D())
         model.add(Conv2D(128, kernel_size=3, padding="same"))
         model.add(Activation("relu"))
-        #model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=0.8))
         #model.add(BatchNormalizationF16(momentum=0.8))
 
         model.add(UpSampling2D())
         model.add(Conv2D(64, kernel_size=3, padding="same"))
         model.add(Activation("relu"))
-        #model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=0.8))
         #model.add(BatchNormalizationF16(momentum=0.8))
         model.add(Conv2D(self.channels, kernel_size=3, padding='same'))
         model.add(Activation("tanh"))
@@ -299,12 +317,12 @@ class ACGAN():
         model.add(ZeroPadding2D(padding=((0, 1), (0, 1))))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        #model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=0.8))
         #model.add(BatchNormalizationF16(momentum=0.8))
         model.add(Conv2D(64, kernel_size=3, strides=2, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dropout(0.25))
-        #model.add(BatchNormalization(momentum=0.8))
+        model.add(BatchNormalization(momentum=0.8))
         #model.add(BatchNormalizationF16(momentum=0.8))
         model.add(Conv2D(128, kernel_size=3, strides=1, padding="same"))
         model.add(LeakyReLU(alpha=0.2))
