@@ -68,9 +68,12 @@ class GanTrainer:
             else:
                 noise = noise.astype(np.float32)
 
+
             # The labels of the digits that the generator tries to create an
             # image representation of
-            sampled_labels = np.random.randint(0, self.gan.num_of_classes, (batch, 1))
+            sampled_labels = np.random.randint(0, self.gan.num_of_classes, (batch, 1)).astype(np.int32)
+
+
 
             #  Train the Discriminator
 
