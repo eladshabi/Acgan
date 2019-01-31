@@ -36,7 +36,6 @@ class GanTrainer:
     def load_dataset(self,tpu):
         try:
             return self.data_loader(os.path.join(self.data_path),tpu)
-
         except:
             Emsg = 'Error occurred during loading the data'
             self.logger.write_warn_to_log(Emsg)
