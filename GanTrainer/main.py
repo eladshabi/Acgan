@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
 
     root_path = os.path.dirname(os.path.abspath(__file__))
-    batches = [32, 128, 512, 1024]
+    batches = [128, 512, 1024]
     data_path = os.path.join(root_path,'data/')
     
 
