@@ -23,7 +23,7 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        optimizer = Adam(0.00002, 0.5)
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
