@@ -79,7 +79,7 @@ class Logger:
 
                 img = generator.predict([noise, label])
                 img = img.astype(np.float32)
-                plt.imshow(img.reshape(28, 28))
+                plt.imshow(img.reshape(28, 28), cmap='gray')
                 plt.savefig(os.path.join(folder_path, str(class_id), str(i+1) + '.jpg'))
         plt.close()
 
