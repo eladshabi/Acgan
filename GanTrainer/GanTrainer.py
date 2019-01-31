@@ -45,10 +45,9 @@ class GanTrainer:
         def train_discriminator(noise, sampled_labels, idx, imgs, valid_l, fake_l):
             # Generate a half batch of new images
 
+            gen_imgs = self.generator.predict([noise, sampled_labels])
             img_labels = self.y_train[idx]
             fake_labels = sampled_labels
-
-
 
             # Train the discriminator
             d_loss_real = self.discriminator.train_on_batch(imgs, [valid_l, img_labels])
