@@ -71,7 +71,7 @@ class Logger:
             for i in range(10):
                 img = generator.predict([np.random.normal(0, 1, (1, 100)), np.array([class_id])])
                 img = img.astype(np.float32)
-                plt.imshow(img.reshape(28, 28), cmap='gray')
+                plt.imshow(img.reshape(28, 28))
                 plt.savefig(os.path.join(folder_path, str(class_id), str(i+1) + '.jpg'))
         plt.close()
 
