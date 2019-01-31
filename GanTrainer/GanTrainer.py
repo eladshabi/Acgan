@@ -63,6 +63,11 @@ class GanTrainer:
             # Sample noise as generator input
             noise = np.random.normal(0, 1, (batch, self.gan.latent_dim))
 
+            if tpu:
+                noise = noise.astype(np.float16)
+            else:
+                noise = noise.astype(np.float32)
+
             # The labels of the digits that the generator tries to create an
             # image representation of
             sampled_labels = np.random.randint(0, self.gan.num_of_classes, (batch, 1))
@@ -101,7 +106,7 @@ class GanTrainer:
             batch_learned += batch_size
             
             if datetime.now() > saving_time:
-                self.logger.save_images(self.generator)
+                self.logger.save_images(self.generator, tpu)
                 self.logger.save_model(self.generator, self.discriminator)
                 saving_time = datetime.now() + timedelta(minutes=saving_step_time)
             

@@ -62,14 +62,22 @@ class Logger:
                 writer = csv.DictWriter(writer_file, headers)
                 writer.writerow({'Time': datetime.now(), 'dis_loss': d_loss[0], 'gen_loss': g_loss[0]})
 
-    def save_images(self, generator):
+    def save_images(self, generator, tpu):
         folder_name = str(datetime.now())
         folder_path = os.path.join(self.images_folder_path, folder_name)
         os.makedirs(folder_path)
         for class_id in range(10):
             os.makedirs(os.path.join(folder_path, str(class_id)))
             for i in range(10):
-                img = generator.predict([np.random.normal(0, 1, (1, 100)), np.array([class_id])])
+                noise = np.random.normal(0, 1, (1, 100))
+                label = np.array([class_id]).astype(np.int32)
+
+                if tpu:
+                    noise = noise.astype(np.float16)
+                else:
+                    noise = noise.astype(np.float32)
+
+                img = generator.predict([noise, label])
                 img = img.astype(np.float32)
                 plt.imshow(img.reshape(28, 28))
                 plt.savefig(os.path.join(folder_path, str(class_id), str(i+1) + '.jpg'))
