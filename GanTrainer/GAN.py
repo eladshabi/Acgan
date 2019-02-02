@@ -26,7 +26,7 @@ class ACGAN():
 
         #optimizer = Adam(0.0002, 0.5)
 
-        optimizer = tf.train.AdamOptimizer(0.0002,0.5).minimize()
+        optimizer = tf.train.AdamOptimizer(0.0002,0.5)
 
 
         cs_po = CrossShardOptimizer(optimizer)
