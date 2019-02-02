@@ -1,8 +1,8 @@
-from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply ,UpSampling2D, Conv2D ,BatchNormalization, Activation, Embedding, ZeroPadding2D, LeakyReLU
-from keras.models import Sequential, Model
-from keras.optimizers import Adam
-from keras.backend import set_floatx, set_epsilon
-from keras import backend as K
+from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply ,UpSampling2D, Conv2D ,BatchNormalization, Activation, Embedding, ZeroPadding2D, LeakyReLU
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.backend import set_floatx, set_epsilon
+from tensorflow.keras import backend as K
 import tensorflow as tf
 from tensorflow.contrib.tpu import CrossShardOptimizer
 
@@ -26,7 +26,7 @@ class ACGAN():
 
         #optimizer = Adam(0.0002, 0.5)
 
-        optimizer = tf.train.AdamOptimizer(0.0002,0.5)
+        optimizer = tf.train.AdamOptimizer(0.0002,0.5).minimize()
 
 
         cs_po = CrossShardOptimizer(optimizer)
