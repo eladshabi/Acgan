@@ -10,7 +10,7 @@ class ACGAN():
     def __init__(self, rows, cols, channels, classes, latent, tpu=False):
 
         if tpu:
-            set_floatx('float16')
+            set_floatx('bfloat16')
             set_epsilon(1e-4)
 
         # Input shape
