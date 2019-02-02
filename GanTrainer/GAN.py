@@ -37,7 +37,7 @@ class ACGAN():
         # Build and compile the discriminator
         self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss=losses,
-                                   optimizer=optimizer,
+                                   optimizer=cs_po,
                                    metrics=['accuracy'])
 
         # Build the generator
@@ -60,7 +60,7 @@ class ACGAN():
         # Trains the generator to fool the discriminator
         self.combined = Model([noise, label], [valid, target_label])
         self.combined.compile(loss=losses,
-                              optimizer=optimizer)
+                              optimizer=cs_po)
 
     def build_generator(self):
 
