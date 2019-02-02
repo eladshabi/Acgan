@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
 
     root_path = os.path.dirname(os.path.abspath(__file__))
-    batches = [128, 512, 1024]
+    batches = [32,128, 512, 1024]
     data_path = os.path.join(root_path,'data/')
     
 
@@ -22,7 +22,7 @@ if __name__ == "__main__":
         os.makedirs(folder_name)
 
         # Create the Ac_gan model
-        ac_gan = ACGAN(28, 28, 1, 10, 100,tpu)
+        ac_gan = ACGAN(28, 28, 1, 10, 100, tpu)
 
         # Create the Gan trainer object and set the data loader function with the data folder path.
 

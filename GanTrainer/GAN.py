@@ -3,7 +3,8 @@ from keras.models import Sequential, Model
 from keras.optimizers import Adam
 from keras.backend import set_floatx, set_epsilon
 from keras import backend as K
-
+import tensorflow as tf
+from tensorflow.contrib.tpu import CrossShardOptimizer
 
 class ACGAN():
     def __init__(self, rows, cols, channels, classes, latent, tpu=False):
@@ -23,7 +24,13 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        #optimizer = Adam(0.0002, 0.5)
+
+        optimizer = tf.train.AdamOptimizer(0.0002,0.5)
+
+
+        cs_po = CrossShardOptimizer(optimizer)
+
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
