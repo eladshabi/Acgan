@@ -5,6 +5,7 @@ import sys
 import os
 
 
+
 if __name__ == "__main__":
 
     # Get all the parameters for the training.
@@ -15,7 +16,7 @@ if __name__ == "__main__":
     root_path = os.path.dirname(os.path.abspath(__file__))
     batches = [32,128, 512, 1024]
     data_path = os.path.join(root_path,'data/')
-    
+
 
     for batch in batches:
         folder_name = os.path.join(root_path, str(batch))
@@ -30,6 +31,13 @@ if __name__ == "__main__":
 
         # Train the model for specific time and custom batch size
         gan_trainer.train_gan_by_time(training_time, batch,tpu)
+
+
+
+
+
+
+
 
 
 

@@ -1,8 +1,8 @@
-from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply ,UpSampling2D, Conv2D ,BatchNormalization, Activation, Embedding, ZeroPadding2D, LeakyReLU
-from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.backend import set_floatx, set_epsilon
-from tensorflow.keras import backend as K
+from keras.layers import Input, Dense, Reshape, Flatten, Dropout, multiply ,UpSampling2D, Conv2D ,BatchNormalization, Activation, Embedding, ZeroPadding2D, LeakyReLU
+from keras.models import Sequential, Model
+from keras.optimizers import Adam
+from keras.backend import set_floatx, set_epsilon
+from keras import backend as K
 import tensorflow as tf
 from tensorflow.contrib.tpu import CrossShardOptimizer
 
@@ -35,13 +35,16 @@ class ACGAN():
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
         # Build and compile the discriminator
-        self.discriminator = self.build_discriminator()
+        self.discriminator = tf.contrib.tpu.keras_to_tpu_model(self.build_discriminator())
+
+
+
         self.discriminator.compile(loss=losses,
                                    optimizer=cs_po,
                                    metrics=['accuracy'])
 
         # Build the generator
-        self.generator = self.build_generator()
+        self.generator = tf.contrib.tpu.keras_to_tpu_model(self.build_generator())
 
         # The generator takes noise and the target label as input
         # and generates the corresponding digit of that label
@@ -58,7 +61,7 @@ class ACGAN():
 
         # The combined model  (stacked generator and discriminator)
         # Trains the generator to fool the discriminator
-        self.combined = Model([noise, label], [valid, target_label])
+        self.combined = tf.contrib.tpu.keras_to_tpu_model(Model([noise, label], [valid, target_label]))
         self.combined.compile(loss=losses,
                               optimizer=cs_po)
 
@@ -118,17 +121,21 @@ class ACGAN():
         model.add(Flatten())
         model.summary()
 
+
         img = Input(shape=self.img_shape)
 
         # Extract feature representation
         features = model(img)
 
+
+
+
+
         # Determine validity and label of the image
         validity = Dense(1, activation="sigmoid")(features)
         label = Dense(self.num_of_classes, activation="softmax")(features)
 
-        validity = tf.cast(validity,tf.float32)
-        label = tf.cast(label,tf.float32)
+
 
         return Model(img, [validity, label])
 
