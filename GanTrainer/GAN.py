@@ -9,9 +9,9 @@ from tensorflow.contrib.tpu import CrossShardOptimizer
 class ACGAN():
     def __init__(self, rows, cols, channels, classes, latent, tpu=False):
 
-        if tpu:
-            set_floatx('bfloat16')
-            set_epsilon(1e-4)
+        # if tpu:
+        #     set_floatx('float16')
+        #     set_epsilon(1e-4)
 
         # Input shape
         self.img_rows = rows
