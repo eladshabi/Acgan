@@ -35,13 +35,15 @@ class ACGAN():
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
 
         # Build and compile the discriminator
-        self.discriminator = tf.contrib.tpu.keras_to_tpu_model(self.build_discriminator())
+        self.discriminator = self.build_discriminator()
 
 
 
         self.discriminator.compile(loss=losses,
                                    optimizer=cs_po,
                                    metrics=['accuracy'])
+
+        self.discriminator = tf.contrib.tpu.keras_to_tpu_model(self.discriminator)
 
         # Build the generator
         self.generator = tf.contrib.tpu.keras_to_tpu_model(self.build_generator())
@@ -61,9 +63,11 @@ class ACGAN():
 
         # The combined model  (stacked generator and discriminator)
         # Trains the generator to fool the discriminator
-        self.combined = tf.contrib.tpu.keras_to_tpu_model(Model([noise, label], [valid, target_label]))
+        self.combined = Model([noise, label], [valid, target_label])
         self.combined.compile(loss=losses,
                               optimizer=cs_po)
+
+        self.combined = tf.contrib.tpu.keras_to_tpu_model(self.combined)
 
     def build_generator(self):
 
