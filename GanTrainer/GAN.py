@@ -127,6 +127,9 @@ class ACGAN():
         validity = Dense(1, activation="sigmoid")(features)
         label = Dense(self.num_of_classes, activation="softmax")(features)
 
+        validity = K.cast(validity,tf.float32)
+        label = K.cast(label,tf.float32)
+
         return Model(img, [validity, label])
 
 
