@@ -30,7 +30,7 @@ class ACGAN():
 
         loss_scale_manager = FixedLossScaleManager(5000)
 
-        loss_scale_optimizer = LossScaleOptimizer(optimizer,loss_scale_manager)
+        loss_scale_optimizer = LossScaleOptimizer(optimizer,loss_scale_manager).minimize('binary_crossentropy')
 
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
