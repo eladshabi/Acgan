@@ -24,9 +24,9 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        #optimizer = Adam(0.0002, 0.5)
+        optimizer = Adam(0.0002, 0.5)
 
-        optimizer = tf.train.AdamOptimizer(0.0002,0.5)
+        #optimizer = tf.train.AdamOptimizer(0.0002,0.5)
 
         loss_scale_manager = FixedLossScaleManager(5000)
 
