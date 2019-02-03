@@ -23,7 +23,7 @@ if __name__ == "__main__":
         os.makedirs(folder_name)
 
         # Create the Ac_gan model
-        ac_gan = ACGAN(28, 28, 1, 10, 100, False)
+        ac_gan = ACGAN(28, 28, 1, 10, 100, tpu)
 
         # Create the Gan trainer object and set the data loader function with the data folder path.
 

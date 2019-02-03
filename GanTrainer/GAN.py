@@ -4,14 +4,14 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.backend import set_floatx, set_epsilon
 from tensorflow.keras import backend as K
 import tensorflow as tf
-from tensorflow.contrib.tpu import CrossShardOptimizer
+from tensorflow.contrib.mixed_precision import LossScaleOptimizer , FixedLossScaleManager
 
 class ACGAN():
     def __init__(self, rows, cols, channels, classes, latent, tpu=False):
 
-        # if tpu:
-        #     set_floatx('float16')
-        #     set_epsilon(1e-4)
+        if tpu:
+            set_floatx('float16')
+            set_epsilon(1e-4)
 
         # Input shape
         self.img_rows = rows
@@ -28,8 +28,9 @@ class ACGAN():
 
         optimizer = tf.train.AdamOptimizer(0.0002,0.5)
 
+        loss_scale_manager = FixedLossScaleManager(5000)
 
-        cs_po = CrossShardOptimizer(optimizer)
+        loss_scale_optimizer = LossScaleOptimizer(optimizer,loss_scale_manager)
 
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
@@ -40,7 +41,7 @@ class ACGAN():
 
 
         self.discriminator.compile(loss=losses,
-                                   optimizer=cs_po,
+                                   optimizer=loss_scale_optimizer,
                                    metrics=['accuracy'])
 
 
@@ -65,7 +66,7 @@ class ACGAN():
         # Trains the generator to fool the discriminator
         self.combined = Model([noise, label], [valid, target_label])
         self.combined.compile(loss=losses,
-                              optimizer=cs_po)
+                              optimizer=loss_scale_optimizer)
 
 
 
