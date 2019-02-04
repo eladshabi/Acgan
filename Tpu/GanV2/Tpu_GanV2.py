@@ -1,15 +1,14 @@
-import tensorflow as tf
 import numpy as np
 import time
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager, LossScaleOptimizer
 from tensorflow.examples.tutorials.mnist import input_data
-from Tpu.GanV2.Models.Generator import Generator
-from Tpu.GanV2.Models.Discriminator import Discriminator
-from Tpu.Tpu_utils.losses import *
+from Tpu.GanV2.Generator import Generator
+from Tpu.GanV2.Discriminator import Discriminator
+from Tpu.GanV2.losses import *
 
-#mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
-mnist = tf.keras.datasets.mnist
+#mnist = tf.keras.datasets.mnist
 
 
 def get_data():
@@ -107,4 +106,5 @@ def create_gan_model():
         print(end - start)
 
 
-create_gan_model()
+if __name__ == "__main__":
+    create_gan_model()

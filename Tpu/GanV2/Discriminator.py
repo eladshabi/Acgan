@@ -1,5 +1,4 @@
-import tensorflow as tf
-from Tpu.Tpu_utils.gan_layers import *
+from Tpu.GanV2.gan_layers import *
 
 class Discriminator:
     def __init__(self, batch_size,input_shape, rows, cols, channels, tpu=False):

@@ -1,5 +1,4 @@
-import tensorflow as tf
-from Tpu.Tpu_utils.gan_layers import *
+from Tpu.GanV2.gan_layers import *
 
 
 class Generator:
