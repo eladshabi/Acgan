@@ -5,7 +5,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from Tpu.GanV2.Generator import Generator
 from Tpu.GanV2.Discriminator import Discriminator
 from Tpu.GanV2.losses import *
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+mnist = input_data.read_data_sets("data/", one_hot=True)
 
 
 def create_gan_model():

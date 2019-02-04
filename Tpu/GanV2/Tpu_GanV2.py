@@ -6,7 +6,9 @@ from Tpu.GanV2.Generator import Generator
 from Tpu.GanV2.Discriminator import Discriminator
 from Tpu.GanV2.losses import *
 
-mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
+from Tpu.GanV2.dtype_convert import float32_variable_storage_getter
+
+mnist = input_data.read_data_sets("data/", one_hot=True)
 
 #mnist = tf.keras.datasets.mnist
 
@@ -19,15 +21,17 @@ def get_data():
 def create_gan_model():
 
     gen = Generator(letant_size=100, tpu=True)
-    dis = Discriminator(784, True)
+    dis = Discriminator(128, True)
 
-    labels = tf.placeholder(tf.float16,shape=[None, -1])
+    labels = tf.placeholder(tf.int32, shape=[None])
     real_images = dis.get_input_tensor()
     z = gen.get_input_tensor()
 
     G = gen.get_generator(z, labels)
-    D_output_real, D_logits_real = dis.get_discriminator(real_images, labels)
-    D_output_fake, D_logits_fake = dis.get_discriminator(G,labels, reuse=True)
+    print("gen :",G)
+
+    D_output_real, D_logits_real = dis.get_discriminator(G, labels)
+    D_output_fake, D_logits_fake = dis.get_discriminator(G,labels,reuse=True)
 
     #############################
     #                           #
@@ -47,9 +51,10 @@ def create_gan_model():
     D_trainer = tf.train.AdamOptimizer(0.002, 0.5)
     G_trainer = tf.train.AdamOptimizer(0.002, 0.5)
 
-    loss_scale_manager = FixedLossScaleManager(5000)
-    loss_scale_optimizer_D = LossScaleOptimizer(D_trainer, loss_scale_manager)
-    loss_scale_optimizer_G = LossScaleOptimizer(G_trainer, loss_scale_manager)
+    loss_scale_manager_D = FixedLossScaleManager(5000)
+    loss_scale_manager_G = FixedLossScaleManager(5000)
+    loss_scale_optimizer_D = LossScaleOptimizer(D_trainer, loss_scale_manager_D)
+    loss_scale_optimizer_G = LossScaleOptimizer(G_trainer, loss_scale_manager_G)
 
     grads_variables_D = loss_scale_optimizer_D.compute_gradients(D_loss, d_vars)
     grads_variables_G = loss_scale_optimizer_G.compute_gradients(G_loss, g_vars)

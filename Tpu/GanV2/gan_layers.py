@@ -2,19 +2,18 @@ import tensorflow as tf
 # From https://github.com/jianpingliu/AC-GAN/blob/master/ac_gan.py
 
 
-
 def conv_2d(x, num_filters, kernel_size=5, stride=2, scope='conv'):
 
     with tf.variable_scope(scope):
         w = tf.get_variable(
             'w', [kernel_size, kernel_size, x.get_shape()[-1], num_filters],
-            initializer=tf.truncated_normal_initializer(stddev=0.02))
+            initializer=tf.truncated_normal_initializer(stddev=0.02),dtype=tf.float16)
 
         conv = tf.nn.conv2d(
             x, w, strides=[1, stride, stride, 1], padding='SAME')
 
         biases = tf.get_variable(
-            'biases', [num_filters], initializer=tf.constant_initializer(0.0))
+            'biases', [num_filters], initializer=tf.constant_initializer(0.0),dtype=tf.float16)
 
         conv = tf.nn.bias_add(conv, biases)
 
@@ -31,14 +30,14 @@ def conv2d_transpose(x,
         w = tf.get_variable(
             'w',
             [kernel_size, kernel_size, output_shape[-1], x.get_shape()[-1]],
-            initializer=tf.truncated_normal_initializer(stddev=0.02))
+            initializer=tf.truncated_normal_initializer(stddev=0.02),dtype=tf.float16)
 
         conv_transpose = tf.nn.conv2d_transpose(
             x, w, output_shape, strides=[1, stride, stride, 1])
 
         biases = tf.get_variable(
             'biases', [output_shape[-1]],
-            initializer=tf.constant_initializer(0.0))
+            initializer=tf.constant_initializer(0.0), dtype=tf.float16)
 
         conv_transpose = tf.nn.bias_add(conv_transpose, biases)
 
@@ -50,12 +49,14 @@ def fc(x, num_outputs, scope="fc"):
     with tf.variable_scope(scope):
         w = tf.get_variable(
             'w', [x.get_shape()[-1], num_outputs],
-            initializer=tf.truncated_normal_initializer(stddev=0.02))
+            initializer=tf.truncated_normal_initializer(stddev=0.02),dtype=tf.float16)
 
         biases = tf.get_variable(
-            'biases', [num_outputs], initializer=tf.constant_initializer(0.0))
+            'biases', [num_outputs], initializer=tf.constant_initializer(0.0),dtype=tf.float16)
 
         output = tf.nn.bias_add(tf.matmul(x, w), biases)
+
+        print(x, w, biases,output)
 
         return output
 

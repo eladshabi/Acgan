@@ -1,11 +1,12 @@
 from Tpu.GanV2.gan_layers import *
+from Tpu.GanV2.dtype_convert import float32_variable_storage_getter
 
 class Discriminator:
-    def __init__(self, batch_size,input_shape, rows, cols, channels, tpu=False):
+    def __init__(self, batch_size,input_shape=(28,28,1), rows=28, cols=2828, channels=1, tpu=False):
         if tpu:
             self.dtype = tf.float16
         else:
-            self.dtypt = tf.float32
+            self.dtype = tf.float32
 
         self.input_shape = input_shape
         self.output_width = rows
@@ -13,10 +14,10 @@ class Discriminator:
         self.n_classes = channels
         self.batch_size = batch_size
 
-    def get_discriminator(self, images, getter, reuse=None):
-        with tf.variable_scope('dis', reuse=reuse, custom_getter=getter):
+    def get_discriminator(self, images, labels,reuse=None):
+        with tf.variable_scope('dis', reuse=reuse, custom_getter=float32_variable_storage_getter):
             # conv1
-
+            print(images)
             conv1 = conv_2d(images, 64, scope="conv1")
 
             # leakly ReLu
@@ -62,4 +63,4 @@ class Discriminator:
             return source_logits, class_logits
 
     def get_input_tensor(self):
-        return tf.placeholder(self.dtypt, shape=[None, self.input_shape])
+        return tf.placeholder(self.dtype, shape=[None, self.input_shape])

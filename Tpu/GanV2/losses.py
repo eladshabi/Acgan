@@ -6,28 +6,31 @@ def loss_func(logits_in, labels_in):
 
 
 def loss(labels, source_logits_real, class_logits_real, source_logits_fake,
-         class_logits_fake,n_classes):
+         class_logits_fake,generated_images):
 
-    labels_one_hot = tf.one_hot(labels, n_classes)
+
+    print(labels)
+
+    labels_one_hot = tf.one_hot(labels, 10)
 
     source_loss_real = tf.reduce_mean(
         tf.nn.sigmoid_cross_entropy_with_logits(
-            source_logits_real, tf.ones_like(source_logits_real)))
+            logits=source_logits_real, labels=tf.ones_like(source_logits_real)))
 
     source_loss_fake = tf.reduce_mean(
         tf.nn.sigmoid_cross_entropy_with_logits(
-            source_logits_fake, tf.zeros_like(source_logits_fake)))
+            logits=source_logits_fake, labels = tf.zeros_like(source_logits_fake)))
 
     g_loss = tf.reduce_mean(
         tf.nn.sigmoid_cross_entropy_with_logits(
-            source_logits_fake, tf.ones_like(source_logits_fake)))
+            logits=source_logits_fake, labels = tf.ones_like(source_logits_fake)))
 
     class_loss_real = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(class_logits_real,
-                                                labels_one_hot))
+        tf.nn.softmax_cross_entropy_with_logits(logits=class_logits_real,
+                                                labels=labels_one_hot))
     class_loss_fake = tf.reduce_mean(
-        tf.nn.softmax_cross_entropy_with_logits(class_logits_fake,
-                                                labels_one_hot))
+        tf.nn.softmax_cross_entropy_with_logits(logits=class_logits_fake,
+                                                labels=labels_one_hot))
 
     d_loss = source_loss_real + source_loss_fake + class_loss_real + class_loss_fake
 
