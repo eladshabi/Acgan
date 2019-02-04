@@ -24,13 +24,13 @@ class ACGAN():
         # size of the vector to fid the generator (z)
         self.latent_dim = latent
 
-        optimizer = Adam(0.0002, 0.5)
+        #optimizer = Adam(0.0002, 0.5)
 
-        #optimizer = tf.train.AdamOptimizer(0.0002,0.5)
+        optimizer = tf.train.AdamOptimizer(0.0002,0.5)
 
         loss_scale_manager = FixedLossScaleManager(5000)
 
-        loss_scale_optimizer = LossScaleOptimizer(optimizer,loss_scale_manager).minimize('binary_crossentropy')
+        loss_scale_optimizer = LossScaleOptimizer(optimizer,loss_scale_manager)
 
 
         losses = ['binary_crossentropy', 'sparse_categorical_crossentropy']
