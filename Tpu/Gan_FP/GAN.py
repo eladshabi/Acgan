@@ -20,7 +20,7 @@ class ACGAN(object):
         self.epoch = epoch
         self.batch_size = batch_size
 
-        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist':
+        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name == 'quick_draw' :
             # parameters
             self.input_height = 28
             self.input_width = 28
@@ -43,7 +43,10 @@ class ACGAN(object):
             self.len_continuous_code = 2  # gaussian distribution (e.g. rotation, thickness)
 
             # load mnist
-            self.data_X, self.data_y = load_mnist(self.dataset_name)
+            #self.data_X, self.data_y = load_mnist(self.dataset_name)
+
+            # load quick_draw
+            self.data_X, self.data_y = load_quick_draw(self.dataset_name,False)
 
             # get number of batches for a single epoch
             self.num_batches = len(self.data_X) // self.batch_size

@@ -1,4 +1,4 @@
-from gan import ACGAN
+from GAN import ACGAN
 from utils import show_all_variables
 import tensorflow as tf
 
