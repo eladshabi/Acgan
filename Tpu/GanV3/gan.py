@@ -12,7 +12,7 @@ import numpy as np
 # from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 
 from ops import *
-from Tutils import *
+from utils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 

@@ -198,7 +198,7 @@ def load_quick_draw(path, tpu=False):
         if filename.endswith('.npy'):
             data = np.load(os.path.join(path, filename))
             for img in data:
-                images.append(img.reshape(28, 28, 1))
+                images.append(img.reshape(28, 28))
                 labels.append(c_num)
 
     data = list(zip(images, labels))
@@ -212,5 +212,11 @@ def load_quick_draw(path, tpu=False):
     images = images / 255
     images = np.expand_dims(images, axis=3)
     labels = np.array(labels).astype(np.int32)
-    labels = labels.reshape(-1, 1)
-    return images, labels
+
+    y_vec = np.zeros((len(labels), 10), dtype=np.float)
+    for i, label in enumerate(labels):
+        y_vec[i, labels[i]] = 1.0
+
+
+    #labels = labels.reshape(-1, 1)
+    return images, y_vec
