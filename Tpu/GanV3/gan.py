@@ -37,7 +37,7 @@ class ACGAN(object):
 
 
 
-        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name=='quick draw':
+        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name=='quick_draw':
             # parameters
             self.input_height = 28
             self.input_width = 28
