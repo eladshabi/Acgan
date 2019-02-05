@@ -6,8 +6,13 @@ import time
 import tensorflow as tf
 import numpy as np
 
-from Tpu.GanV3.ops import *
-from Tpu.GanV3.utils import *
+# from Tpu.GanV3.ops import *
+# from Tpu.GanV3.utils import *
+#
+# from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
+
+from ops import *
+from Tutils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 
