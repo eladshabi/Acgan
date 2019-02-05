@@ -9,6 +9,8 @@ import numpy as np
 from Tpu.GanV3.ops import *
 from Tpu.GanV3.utils import *
 
+from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
+
 class ACGAN(object):
     model_name = "ACGAN"     # name for checkpoint
 
@@ -20,7 +22,14 @@ class ACGAN(object):
         self.log_dir = log_dir
         self.epoch = epoch
         self.batch_size = batch_size
-        self.dtype = tf.float32 if tpu else tf.float16
+
+        if tpu:
+            self.dtype = tf.float16
+            self.nptype = np.float16
+        else:
+            self.dtype = tf.float32
+            self.nptype = np.float32
+
 
 
         if dataset_name == 'mnist' or dataset_name == 'fashion-mnist':
@@ -59,9 +68,11 @@ class ACGAN(object):
         # All layers except the last two layers are shared by discriminator
         with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
 
-            net = lrelu(bn(linear(x, 128, scope='c_fc1',data_type=self.dtype), is_training=is_training, scope='c_bn1'))
-            out_logit = linear(net, self.y_dim, scope='c_fc2',data_type=self.dtype)
+            net = lrelu(bn(linear(x, 128, scope='c_fc1', data_type=self.dtype), is_training=is_training, scope='c_bn1'))
+            out_logit = linear(net, self.y_dim, scope='c_fc2', data_type=self.dtype)
             out = tf.nn.softmax(out_logit)
+
+
 
             return out, out_logit
 
@@ -76,6 +87,8 @@ class ACGAN(object):
             net = lrelu(bn(linear(net, 1024, scope='d_fc3',data_type=self.dtype), is_training=is_training, scope='d_bn3'))
             out_logit = linear(net, 1, scope='d_fc4', data_type=self.dtype)
             out = tf.nn.sigmoid(out_logit)
+
+
 
             return out, out_logit, net
 
@@ -95,6 +108,8 @@ class ACGAN(object):
                    scope='g_bn3'))
 
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 28, 28, 1], 4, 4, 2, 2, name='g_dc4',data_type=self.dtype))
+
+
 
             return out
 
@@ -120,7 +135,7 @@ class ACGAN(object):
 
         # output of D for fake images
         G = self.generator(self.z, self.y, is_training=True, reuse=False)
-        D_fake, D_fake_logits, input4classifier_fake = self.discriminator(G, is_training=True, reuse=True)
+        D_fake, D_fake_logits, input4classifier_fake = self.discriminator(G, is_training=True, reuse=True)###///
 
         # get loss for discriminator
         d_loss_real = tf.reduce_mean(
@@ -128,7 +143,7 @@ class ACGAN(object):
         d_loss_fake = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=D_fake_logits, labels=tf.zeros_like(D_fake)))
 
-        self.d_loss = d_loss_real + d_loss_fake
+        self.d_loss = tf.add(d_loss_real,d_loss_fake)
 
         # get loss for generator
         self.g_loss = tf.reduce_mean(
@@ -145,23 +160,66 @@ class ACGAN(object):
         q_fake_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=code_logit_fake, labels=self.y))
 
         # get information loss
-        self.q_loss = q_fake_loss + q_real_loss
+        self.q_loss = tf.add(q_fake_loss,q_real_loss)
 
         """ Training """
         # divide trainable variables into a group for D and a group for G
+        print(1)
         t_vars = tf.trainable_variables()
+
         d_vars = [var for var in t_vars if 'd_' in var.name]
         g_vars = [var for var in t_vars if 'g_' in var.name]
         q_vars = [var for var in t_vars if ('d_' in var.name) or ('c_' in var.name) or ('g_' in var.name)]
 
+        print(d_vars)
+        print(g_vars)
+        print(q_vars)
+
+        print(2)
         # optimizers
+        # with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+        #     self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
+        #         .minimize(self.d_loss, var_list=d_vars)
+        #     self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
+        #         .minimize(self.g_loss, var_list=g_vars)
+        #     self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
+        #         .minimize(self.q_loss, var_list=q_vars)
+
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
-                .minimize(self.d_loss, var_list=d_vars)
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-                .minimize(self.g_loss, var_list=g_vars)
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-                .minimize(self.q_loss, var_list=q_vars)
+            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+
+            self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1)
+
+            self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1)
+
+            scale = 128
+
+            self.loss_scale_manager_D = FixedLossScaleManager(scale)
+            self.loss_scale_manager_G = FixedLossScaleManager(scale)
+            self.loss_scale_manager_Q = FixedLossScaleManager(scale)
+
+            print(3)
+
+            self.loss_scale_optimizer_D = LossScaleOptimizer(self.d_optim, self.loss_scale_manager_D)
+            self.loss_scale_optimizer_G = LossScaleOptimizer(self.g_optim, self.loss_scale_manager_G)
+            self.loss_scale_optimizer_Q = LossScaleOptimizer(self.q_optim, self.loss_scale_manager_Q)
+
+            print(4)
+
+            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
+            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
+            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
+
+            print(self.grads_variables_D)
+            print(self.grads_variables_G)
+            print(self.grads_variables_Q)
+
+            self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
+            print('New Q_grad:',self.q_grads )
+
+            self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
+            self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
+            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
 
         """" Testing """
         # for test
@@ -219,17 +277,17 @@ class ACGAN(object):
                 batch_images = self.data_X[idx*self.batch_size:(idx+1)*self.batch_size]
                 batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-                batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(np.float32)
+                batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
                 # update D network
-                _, summary_str, d_loss = self.sess.run([self.d_optim, self.d_sum, self.d_loss],
+                _, summary_str, d_loss = self.sess.run([self.training_step_op_D, self.d_sum, self.d_loss],
                                                        feed_dict={self.inputs: batch_images, self.y: batch_codes,
                                                                   self.z: batch_z})
                 self.writer.add_summary(summary_str, counter)
 
                 # update G & Q network
                 _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
-                    [self.g_optim, self.g_sum, self.g_loss, self.q_optim, self.q_sum, self.q_loss],
+                    [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                     feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
                 self.writer.add_summary(summary_str_g, counter)
                 self.writer.add_summary(summary_str_q, counter)

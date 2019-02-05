@@ -5,6 +5,9 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
                                     initializer=None, regularizer=None,
                                     trainable=True,
                                     *args, **kwargs):
+
+
+
     """Custom variable getter that forces trainable variables to be stored in
     float32 precision and then casts them to the training precision.
     """

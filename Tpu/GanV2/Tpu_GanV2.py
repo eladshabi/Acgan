@@ -53,6 +53,7 @@ def create_gan_model():
 
     loss_scale_manager_D = FixedLossScaleManager(5000)
     loss_scale_manager_G = FixedLossScaleManager(5000)
+
     loss_scale_optimizer_D = LossScaleOptimizer(D_trainer, loss_scale_manager_D)
     loss_scale_optimizer_G = LossScaleOptimizer(G_trainer, loss_scale_manager_G)
 

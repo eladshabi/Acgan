@@ -4,7 +4,7 @@ import tensorflow as tf
 
 with tf.Session() as sess:
 
-    gan = ACGAN(sess,2,128,100,"mnist",'saved_model/','results/','logs')
+    gan = ACGAN(sess,2,128,100,"mnist",'saved_model/','results/','logs', tpu=True)
 
     # build graph
     gan.build_model()
