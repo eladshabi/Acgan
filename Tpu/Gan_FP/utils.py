@@ -199,3 +199,28 @@ def load_quick_draw(path, tpu=False):
 
     #labels = labels.reshape(-1, 1)
     return images, y_vec
+
+
+def load_cifar10(tpu =False):
+
+    if tpu:
+        npdtype = np.float16
+    else:
+        npdtype =np.float32
+
+    (X_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
+
+    X = np.concatenate((X_train, x_test), axis=0).astype(npdtype)
+    y = np.concatenate((y_train, y_test), axis=0).astype(np.int32)
+
+    seed = 547
+    np.random.seed(seed)
+    np.random.shuffle(X)
+    np.random.seed(seed)
+    np.random.shuffle(y)
+
+    y_vec = np.zeros((len(y), 10), dtype=npdtype)
+    for i, label in enumerate(y):
+        y_vec[i, y[i]] = 1.0
+
+    return X / 255., y_vec

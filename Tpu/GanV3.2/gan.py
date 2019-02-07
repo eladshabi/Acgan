@@ -110,10 +110,10 @@ class ACGAN(object):
             z = concat([z, y], 1)
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='g_fc1', data_type=self.dtype), is_training=is_training, scope='g_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * 7 * 7, scope='g_fc2', data_type=self.dtype), is_training=is_training, scope='g_bn2'))
-            net = tf.reshape(net, [self.batch_size, 7, 7, 128])
+            net = tf.nn.relu(bn(linear(net, 128 * 8 * 8, scope='g_fc2', data_type=self.dtype), is_training=is_training, scope='g_bn2'))
+            net = tf.reshape(net, [self.batch_size, 8, 8, 128])
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='g_dc3',data_type=self.dtype), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3',data_type=self.dtype), is_training=is_training,
                    scope='g_bn3'))
 
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4',data_type=self.dtype))

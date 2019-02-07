@@ -5,8 +5,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-from ops import *
-from utils import *
+from Tpu.Gan_FP.ops import *
+from Tpu.Gan_FP.utils import *
 
 class ACGAN(object):
     model_name = "ACGAN"     # name for checkpoint
@@ -20,16 +20,16 @@ class ACGAN(object):
         self.epoch = epoch
         self.batch_size = batch_size
 
-        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name == 'quick_draw' :
+        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name == 'quick_draw' or dataset_name=="cifar10":
             # parameters
-            self.input_height = 28
-            self.input_width = 28
-            self.output_height = 28
-            self.output_width = 28
+            self.input_height = 32
+            self.input_width = 32
+            self.output_height = 32
+            self.output_width = 32
 
             self.z_dim = z_dim         # dimension of noise-vector
             self.y_dim = 10         # dimension of code-vector (label)
-            self.c_dim = 1
+            self.c_dim = 3
 
             # train
             self.learning_rate = 0.0002
@@ -46,7 +46,9 @@ class ACGAN(object):
             #self.data_X, self.data_y = load_mnist(self.dataset_name)
 
             # load quick_draw
-            self.data_X, self.data_y = load_quick_draw(self.dataset_name,False)
+            #self.data_X, self.data_y = load_quick_draw(self.dataset_name,False)
+
+            self.data_X, self.data_y = load_cifar10()
 
             # get number of batches for a single epoch
             self.num_batches = len(self.data_X) // self.batch_size
@@ -88,13 +90,13 @@ class ACGAN(object):
             z = concat([z, y], 1)
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='g_fc1'), is_training=is_training, scope='g_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * 7 * 7, scope='g_fc2'), is_training=is_training, scope='g_bn2'))
-            net = tf.reshape(net, [self.batch_size, 7, 7, 128])
+            net = tf.nn.relu(bn(linear(net, 128 * 8 * 8, scope='g_fc2'), is_training=is_training, scope='g_bn2'))
+            net = tf.reshape(net, [self.batch_size, 8, 8, 128])
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='g_dc3'), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3'), is_training=is_training,
                    scope='g_bn3'))
 
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 28, 28, 1], 4, 4, 2, 2, name='g_dc4'))
+            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4'))
 
             return out
 
