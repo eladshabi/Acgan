@@ -85,6 +85,8 @@ class ACGAN(object):
 
 
 
+
+
             return out, out_logit
 
     def discriminator(self, x, is_training=True, reuse=False):
@@ -198,13 +200,13 @@ class ACGAN(object):
         #         .minimize(self.q_loss, var_list=q_vars)
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(loss=self.d_loss, var_list=d_vars)
+            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
 
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1).minimize(loss=self.g_loss, var_list=g_vars)
+            self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
 
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1).minimize(loss=self.q_loss, var_list=q_vars)
+            self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
 
-            scale = 2
+            scale = 128
 
             self.loss_scale_manager_D = FixedLossScaleManager(scale)
             self.loss_scale_manager_G = FixedLossScaleManager(scale)
@@ -219,22 +221,22 @@ class ACGAN(object):
             print(4)
 
 
-            # self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
-            # self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
-            # self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
-            #
-            #
-            # print(self.grads_variables_D)
-            # print(self.grads_variables_G)
-            # print(self.grads_variables_Q)
-            #
-            # self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
-            # print('New Q_grad:',self.q_grads )
-            #
-            #
-            # self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
-            # self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            # self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
+            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
+            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
+            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
+
+
+            print(self.grads_variables_D)
+            print(self.grads_variables_G)
+            print(self.grads_variables_Q)
+
+            self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
+            print('New Q_grad:',self.q_grads )
+
+
+            self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
+            self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
+            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.grads_variables_Q)
 
 
         """" Testing """
