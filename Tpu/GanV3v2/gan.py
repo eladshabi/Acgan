@@ -236,7 +236,7 @@ class ACGAN(object):
 
             self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
             self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.grads_variables_Q)
+            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
 
 
         """" Testing """
@@ -298,14 +298,14 @@ class ACGAN(object):
                 batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
                 # update D network
-                _, summary_str, d_loss = self.sess.run([self.d_optim, self.d_sum, self.d_loss],
+                _, summary_str, d_loss = self.sess.run([self.training_step_op_D, self.d_sum, self.d_loss],
                                                        feed_dict={self.inputs: batch_images, self.y: batch_codes,
                                                                   self.z: batch_z})
                 self.writer.add_summary(summary_str, counter)
 
                 # update G & Q network
                 _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
-                    [self.g_optim, self.g_sum, self.g_loss, self.q_optim, self.q_sum, self.q_loss],
+                    [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                     feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
                 self.writer.add_summary(summary_str_g, counter)
                 self.writer.add_summary(summary_str_q, counter)
