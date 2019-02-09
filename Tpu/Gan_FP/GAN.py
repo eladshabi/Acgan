@@ -77,6 +77,7 @@ class ACGAN(object):
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(linear(net, 1024, scope='d_fc3'), is_training=is_training, scope='d_bn3'))
             out_logit = linear(net, 1, scope='d_fc4')
+
             out = tf.nn.sigmoid(out_logit)
 
             return out, out_logit, net

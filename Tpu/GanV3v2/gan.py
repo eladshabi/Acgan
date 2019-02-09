@@ -11,10 +11,12 @@ import numpy as np
 #
 # from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 
+
 from ops import *
 from utils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
+from tensorflow.contrib.layers import fully_connected as fc
 
 class ACGAN(object):
     model_name = "ACGAN"     # name for checkpoint
@@ -77,8 +79,8 @@ class ACGAN(object):
         # All layers except the last two layers are shared by discriminator
         with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
 
-            net = lrelu(bn(linear(x, 128, scope='c_fc1', data_type=self.dtype), is_training=is_training, scope='c_bn1'))
-            out_logit = linear(net, self.y_dim, scope='c_fc2', data_type=self.dtype)
+            net = lrelu(bn(fc(x, 128, scope='c_fc1', activation_fn=None), is_training=is_training, scope='c_bn1'))
+            out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
             out = tf.nn.softmax(out_logit)
 
 
@@ -93,8 +95,9 @@ class ACGAN(object):
             net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='d_conv1', data_type=self.dtype))
             net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='d_conv2', data_type=self.dtype), is_training=is_training, scope='d_bn2'))
             net = tf.reshape(net, [self.batch_size, -1])
-            net = lrelu(bn(linear(net, 1024, scope='d_fc3',data_type=self.dtype), is_training=is_training, scope='d_bn3'))
-            out_logit = linear(net, 1, scope='d_fc4', data_type=self.dtype)
+            net = lrelu(bn(fc(net, 1024, scope='d_fc3',activation_fn=None), is_training=is_training, scope='d_bn3'))
+            #out_logit = linear(net, 1, scope='d_fc4', data_type=self.dtype)
+            out_logit = fc(net, 1, scope='d_fc4' )
             out = tf.nn.sigmoid(out_logit)
 
 
@@ -109,8 +112,8 @@ class ACGAN(object):
             # merge noise and code
             z = concat([z, y], 1)
 
-            net = tf.nn.relu(bn(linear(z, 1024, scope='g_fc1', data_type=self.dtype), is_training=is_training, scope='g_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * 8 * 8, scope='g_fc2', data_type=self.dtype), is_training=is_training, scope='g_bn2'))
+            net = tf.nn.relu(bn(fc(z, 1024, scope='g_fc1', activation_fn=None), is_training=is_training, scope='g_bn1'))
+            net = tf.nn.relu(bn(fc(net, 128 * 8 * 8, scope='g_fc2', activation_fn=None), is_training=is_training, scope='g_bn2'))
             net = tf.reshape(net, [self.batch_size, 8, 8, 128])
             net = tf.nn.relu(
                 bn(deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3',data_type=self.dtype), is_training=is_training,
@@ -163,10 +166,10 @@ class ACGAN(object):
         code_real, code_logit_real = self.classifier(input4classifier_real, is_training=True, reuse=True)
 
         # For real samples
-        q_real_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=code_logit_real, labels=self.y))
+        q_real_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=code_logit_real, labels=self.y))
 
         # For fake samples
-        q_fake_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=code_logit_fake, labels=self.y))
+        q_fake_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=code_logit_fake, labels=self.y))
 
         # get information loss
         self.q_loss = tf.add(q_fake_loss,q_real_loss)
@@ -195,13 +198,13 @@ class ACGAN(object):
         #         .minimize(self.q_loss, var_list=q_vars)
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(loss=self.d_loss, var_list=d_vars)
 
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1)
+            self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1).minimize(loss=self.g_loss, var_list=g_vars)
 
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1)
+            self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1).minimize(loss=self.q_loss, var_list=q_vars)
 
-            scale = 128
+            scale = 2
 
             self.loss_scale_manager_D = FixedLossScaleManager(scale)
             self.loss_scale_manager_G = FixedLossScaleManager(scale)
@@ -215,20 +218,24 @@ class ACGAN(object):
 
             print(4)
 
-            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
-            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
-            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
 
-            print(self.grads_variables_D)
-            print(self.grads_variables_G)
-            print(self.grads_variables_Q)
+            # self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
+            # self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
+            # self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
+            #
+            #
+            # print(self.grads_variables_D)
+            # print(self.grads_variables_G)
+            # print(self.grads_variables_Q)
+            #
+            # self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
+            # print('New Q_grad:',self.q_grads )
+            #
+            #
+            # self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
+            # self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
+            # self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
 
-            self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
-            print('New Q_grad:',self.q_grads )
-
-            self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
-            self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
 
         """" Testing """
         # for test
@@ -289,14 +296,14 @@ class ACGAN(object):
                 batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
                 # update D network
-                _, summary_str, d_loss = self.sess.run([self.training_step_op_D, self.d_sum, self.d_loss],
+                _, summary_str, d_loss = self.sess.run([self.d_optim, self.d_sum, self.d_loss],
                                                        feed_dict={self.inputs: batch_images, self.y: batch_codes,
                                                                   self.z: batch_z})
                 self.writer.add_summary(summary_str, counter)
 
                 # update G & Q network
                 _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
-                    [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
+                    [self.g_optim, self.g_sum, self.g_loss, self.q_optim, self.q_sum, self.q_loss],
                     feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
                 self.writer.add_summary(summary_str_g, counter)
                 self.writer.add_summary(summary_str_q, counter)
