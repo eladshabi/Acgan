@@ -12,8 +12,11 @@ import numpy as np
 # from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 
 
-from ops import *
-from utils import *
+# from ops import *
+# from utils import *
+
+from Tpu.GanV3v2.ops import *
+from Tpu.GanV3v2.utils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 from tensorflow.contrib.layers import fully_connected as fc
@@ -36,6 +39,8 @@ class ACGAN(object):
         else:
             self.dtype = tf.float32
             self.nptype = np.float32
+
+
 
 
 
@@ -99,10 +104,8 @@ class ACGAN(object):
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(fc(net, 1024, scope='d_fc3',activation_fn=None), is_training=is_training, scope='d_bn3'))
             #out_logit = linear(net, 1, scope='d_fc4', data_type=self.dtype)
-            out_logit = fc(net, 1, scope='d_fc4' )
+            out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
             out = tf.nn.sigmoid(out_logit)
-
-
 
             return out, out_logit, net
 
@@ -157,7 +160,7 @@ class ACGAN(object):
         d_loss_fake = tf.reduce_mean(
             tf.nn.sigmoid_cross_entropy_with_logits(logits=D_fake_logits, labels=tf.zeros_like(D_fake)))
 
-        self.d_loss = tf.add(d_loss_real,d_loss_fake)
+        self.d_loss = tf.add(d_loss_real, d_loss_fake)
 
         # get loss for generator
         self.g_loss = tf.reduce_mean(
@@ -200,13 +203,13 @@ class ACGAN(object):
         #         .minimize(self.q_loss, var_list=q_vars)
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1, epsilon=1e-4)
 
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
+            self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1, epsilon=1e-4)
 
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
+            self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1, epsilon=1e-4)
 
-            scale = 128
+            scale = 2
 
             self.loss_scale_manager_D = FixedLossScaleManager(scale)
             self.loss_scale_manager_G = FixedLossScaleManager(scale)
@@ -236,7 +239,7 @@ class ACGAN(object):
 
             self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
             self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
+            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.grads_variables_Q)
 
 
         """" Testing """
