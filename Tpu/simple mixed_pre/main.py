@@ -18,12 +18,6 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
         variable = tf.cast(variable, dtype)
     return variable
 
-def gradients_with_loss_scaling(loss, variables, loss_scale):
-    """Gradient calculation with loss scaling to improve numerical stability
-    when training with float16.
-    """
-    return [grad / loss_scale
-            for grad in tf.gradients(loss * loss_scale, variables)]
 
 def create_simple_model(nbatch, nin, nout, dtype):
     """A simple softmax model."""
@@ -53,7 +47,7 @@ if __name__ == '__main__':
     with tf.device('/gpu:0'), \
          tf.variable_scope(
              # Note: This forces trainable variables to be stored as float32
-             'fp32_storage'):
+             'fp32_storage',custom_getter=float32_variable_storage_getter):
         data, target, loss = create_simple_model(nbatch, nin, nout, dtype)
         variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 

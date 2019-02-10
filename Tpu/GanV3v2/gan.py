@@ -224,9 +224,9 @@ class ACGAN(object):
             print(4)
 
 
-            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
-            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
-            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
+            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss)
+            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss)
+            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss)
 
 
             print(self.grads_variables_D)
