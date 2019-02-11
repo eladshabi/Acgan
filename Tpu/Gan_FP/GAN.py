@@ -159,68 +159,17 @@ class ACGAN(object):
         g_vars = [var for var in t_vars if 'g_' in var.name]
         q_vars = [var for var in t_vars if ('d_' in var.name) or ('c_' in var.name) or ('g_' in var.name)]
 
-        # optimizers
-        # with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-        #     self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
-        #         .minimize(self.d_loss, var_list=d_vars)
-        #     self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-        #         .minimize(self.g_loss, var_list=g_vars)
-        #     self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-        #         .minimize(self.q_loss, var_list=q_vars)
-
-
+        #optimizers
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-
-
-
-            dg = self.d_optim.compute_gradients(self.d_loss, var_list=d_vars)
-
-            gg =self.g_optim.compute_gradients(self.g_loss, var_list=g_vars)
-
-            qg = self.q_optim.compute_gradients(self.q_loss, var_list=q_vars)
-
-            self.d_optim.apply_gradients(dg)
-
-            self.g_optim.apply_gradients(gg)
-
-            self.q_optim.apply_gradients(qg)
-
-            # scale = 1
-            #
-            # self.loss_scale_manager_D = FixedLossScaleManager(scale)
-            # self.loss_scale_manager_G = FixedLossScaleManager(scale)
-            # self.loss_scale_manager_Q = FixedLossScaleManager(scale)
-            #
-            # print(3)
-            #
-            # self.loss_scale_optimizer_D = LossScaleOptimizer(self.d_optim, self.loss_scale_manager_D)
-            # self.loss_scale_optimizer_G = LossScaleOptimizer(self.g_optim, self.loss_scale_manager_G)
-            # self.loss_scale_optimizer_Q = LossScaleOptimizer(self.q_optim, self.loss_scale_manager_Q)
-            #
-            # print(4)
-            #
-            #
-            # self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss,var_list=d_vars)
-            # self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss,var_list=g_vars)
-            # self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss,var_list=q_vars)
+            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
+                .minimize(self.d_loss, var_list=d_vars)
+            self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
+                .minimize(self.g_loss, var_list=g_vars)
+            self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
+                .minimize(self.q_loss, var_list=q_vars)
 
 
-            print(dg)
-            print(gg)
-            print(qg)
 
-            # self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
-            # print('New Q_grad:',self.q_grads)
-
-
-            # self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
-            # self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            # self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.grads_variables_Q)
 
 
 
