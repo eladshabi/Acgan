@@ -1,5 +1,7 @@
-from Tpu.Gan_FP.GAN import ACGAN
-from Tpu.Gan_FP.utils import show_all_variables
+# from Tpu.Gan_FP.GAN import ACGAN
+# from Tpu.Gan_FP.utils import show_all_variables
+from GAN import ACGAN
+from utils import show_all_variables
 import tensorflow as tf
 
 with tf.Session() as sess:

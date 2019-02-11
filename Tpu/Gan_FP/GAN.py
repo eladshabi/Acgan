@@ -5,8 +5,10 @@ import time
 import tensorflow as tf
 import numpy as np
 
-from Tpu.Gan_FP.ops import *
-from Tpu.Gan_FP.utils import *
+# from Tpu.Gan_FP.ops import *
+# from Tpu.Gan_FP.utils import *
+from ops import *
+from utils import *
 
 from tensorflow.contrib.mixed_precision import *
 
