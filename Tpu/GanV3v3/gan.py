@@ -75,9 +75,9 @@ class ACGAN(object):
         else:
             raise NotImplementedError
 
-    def classifier(self, x, is_training=True, reuse=False, custom_getter=float32_variable_storage_getter):
+    def classifier(self, x, is_training=True, reuse=False):
 
-        with tf.variable_scope("classifier", reuse=reuse):
+        with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
 
             net = fc(x, 128, scope='c_fc1', activation_fn=None)
 
@@ -96,8 +96,8 @@ class ACGAN(object):
 
             return out, out_logit
 
-    def discriminator(self, x, is_training=True, reuse=False, custom_getter=float32_variable_storage_getter):
-        with tf.variable_scope("discriminator", reuse=reuse):
+    def discriminator(self, x, is_training=True, reuse=False):
+        with tf.variable_scope("discriminator", reuse=reuse, custom_getter=float32_variable_storage_getter):
 
             # Cast the input to float16
             x = tf.cast(x, tf.float16)
@@ -244,7 +244,7 @@ class ACGAN(object):
 
             self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
 
-            scale = 2
+            scale = 128
 
             self.loss_scale_manager_D = FixedLossScaleManager(scale)
             self.loss_scale_manager_G = FixedLossScaleManager(scale)
