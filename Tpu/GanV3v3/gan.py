@@ -12,11 +12,11 @@ import numpy as np
 # from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 
 
-# from ops import *
-# from utils import *
+from ops import *
+from utils import *
 
-from Tpu.GanV3v3.ops import *
-from Tpu.GanV3v3.utils import *
+# from Tpu.GanV3v3.ops import *
+# from Tpu.GanV3v3.utils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 from tensorflow.contrib.layers import fully_connected as fc
