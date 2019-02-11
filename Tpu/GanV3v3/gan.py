@@ -15,12 +15,11 @@ import numpy as np
 # from ops import *
 # from utils import *
 
-from Tpu.GanV3v2.ops import *
-from Tpu.GanV3v2.utils import *
+from Tpu.GanV3v3.ops import *
+from Tpu.GanV3v3.utils import *
 
 from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
 from tensorflow.contrib.layers import fully_connected as fc
-
 
 
 class ACGAN(object):
@@ -76,8 +75,8 @@ class ACGAN(object):
         else:
             raise NotImplementedError
 
+    def classifier(self, x, is_training=True, reuse=False, custom_getter=float32_variable_storage_getter):
 
-    def classifier(self, x, is_training=True, reuse=False):
         with tf.variable_scope("classifier", reuse=reuse):
 
             net = fc(x, 128, scope='c_fc1', activation_fn=None)
@@ -85,7 +84,6 @@ class ACGAN(object):
             # Batch normalization should be calculated as type of float32
             net = tf.cast(net, tf.float32)
             net = bn(net, is_training=is_training, scope='c_bn1')
-
 
             # Leveraging the tensors core for fully connected weight.
             net = tf.cast(net, tf.float16)
@@ -98,57 +96,82 @@ class ACGAN(object):
 
             return out, out_logit
 
-    # def classifier(self, x, is_training=True, reuse=False):
-    #     # Network Architecture is exactly same as in infoGAN (https://arxiv.org/abs/1606.03657)
-    #     # Architecture : (64)5c2s-(128)5c2s_BL-FC1024_BL-FC128_BL-FC12S’
-    #     # All layers except the last two layers are shared by discriminator
-    #     with tf.variable_scope("classifier", reuse=reuse):
-    #
-    #         net = lrelu(bn(fc(x, 128, scope='c_fc1', activation_fn=None), is_training=is_training, scope='c_bn1'))
-    #
-    #         out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
-    #         out = tf.nn.softmax(out_logit)
-    #
-    #         print("classsifier: ",out, out_logit )
-    #
-    #
-    #         return out, out_logit
-
-    def discriminator(self, x, is_training=True, reuse=False):
-        # Network Architecture is exactly same as in infoGAN (https://arxiv.org/abs/1606.03657)
-        # Architecture : (64)4c2s-(128)4c2s_BL-FC1024_BL-FC1_S
+    def discriminator(self, x, is_training=True, reuse=False, custom_getter=float32_variable_storage_getter):
         with tf.variable_scope("discriminator", reuse=reuse):
 
-            net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='d_conv1', data_type=self.dtype))
-            net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='d_conv2', data_type=self.dtype), is_training=is_training, scope='d_bn2'))
+            # Cast the input to float16
+            x = tf.cast(x, tf.float16)
+
+            net = conv2d(x, 64, 4, 4, 2, 2, name='d_conv1', data_type=self.dtype)
+            net = tf.nn.leaky_relu(net, alpha=0.2)
+
+            net = conv2d(net, 128, 4, 4, 2, 2, name='d_conv2', data_type=self.dtype)
+
+            # Batch normalization should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            net = bn(net, is_training=is_training, scope='d_bn2')
+
+            # Leveraging the tensors core for fully connected weight.
+            net = tf.cast(net, tf.float16)
+            net = tf.nn.leaky_relu(net, alpha=0.2)
             net = tf.reshape(net, [self.batch_size, -1])
-            net = lrelu(bn(fc(net, 1024, scope='d_fc3',activation_fn=None), is_training=is_training, scope='d_bn3'))
-            #out_logit = linear(net, 1, scope='d_fc4', data_type=self.dtype)
-            #net = tf.cast(net, tf.float32)
+            net = fc(net, 1024, scope='d_fc3', activation_fn=None)
+
+            # Batch normalization should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            net = bn(net, is_training=is_training, scope='d_bn3')
+
+            # Leveraging the tensors core for fully connected weight.
+            net = tf.cast(net, tf.float16)
+            net = tf.nn.leaky_relu(net, alpha=0.2)
             out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
+
+            # Sigmoid should be calculated as type of float32
+            out_logit = tf.cast(out_logit, tf.float32)
             out = tf.nn.sigmoid(out_logit)
-            print("discriminator: ",out, out_logit, net)
 
             return out, out_logit, net
 
     def generator(self, z, y, is_training=True, reuse=False):
-        # Network Architecture is exactly same as in infoGAN (https://arxiv.org/abs/1606.03657)
-        # Architecture : FC1024_BR-FC7x7x128_BR-(64)4dc2s_BR-(1)4dc2s_S
-        with tf.variable_scope("generator", reuse=reuse):
+
+        with tf.variable_scope("generator", reuse=reuse, custom_getter=float32_variable_storage_getter):
 
             # merge noise and code
             z = concat([z, y], 1)
+            net = fc(z, 1024, scope='g_fc1', activation_fn=None)
 
-            net = tf.nn.relu(bn(fc(z, 1024, scope='g_fc1', activation_fn=None), is_training=is_training, scope='g_bn1'))
-            net = tf.nn.relu(bn(fc(net, 128 * 8 * 8, scope='g_fc2', activation_fn=None), is_training=is_training, scope='g_bn2'))
+            # Batch normalization should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            net = bn(net, is_training=is_training, scope='g_bn1')
+
+            # Leveraging the tensors core for fully connected weight.
+            net = tf.cast(net, tf.float16)
+            net = tf.nn.relu(net)
+            net = fc(net, 128 * 8 * 8, scope='g_fc2', activation_fn=None)
+
+            # Batch normalization should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            net = bn(net, is_training=is_training, scope='g_bn2')
+
+            # Leveraging the tensors core
+            net = tf.cast(net, tf.float16)
+            net = tf.nn.relu(net)
             net = tf.reshape(net, [self.batch_size, 8, 8, 128])
-            net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3',data_type=self.dtype), is_training=is_training,
-                   scope='g_bn3'))
+            net = deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
 
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4',data_type=self.dtype))
+            # Batch normalization should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            net = bn(net, is_training=is_training, scope='g_bn3')
 
-            print("generator: ", out)
+            # Leveraging the tensors core
+            net = tf.cast(net, tf.float16)
+            net = tf.nn.relu(net)
+            net = deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4', data_type=self.dtype)
+
+            # Sigmoid should be calculated as type of float32
+            net = tf.cast(net, tf.float32)
+            out = tf.nn.sigmoid(net)
+
             return out
 
     def build_model(self):
@@ -192,18 +215,19 @@ class ACGAN(object):
         code_real, code_logit_real = self.classifier(input4classifier_real, is_training=True, reuse=True)
 
         # For real samples
-        q_real_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=code_logit_real, labels=self.y))
+        q_real_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=code_logit_real, labels=self.y))# Check for label dtype
 
         # For fake samples
         q_fake_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=code_logit_fake, labels=self.y))
 
         # get information loss
-        self.q_loss = tf.add(q_fake_loss,q_real_loss)
+        self.q_loss = tf.add(q_fake_loss, q_real_loss)
 
         """ Training """
         # divide trainable variables into a group for D and a group for G
         print(1)
         t_vars = tf.trainable_variables()
+
 
         d_vars = [var for var in t_vars if 'd_' in var.name]
         g_vars = [var for var in t_vars if 'g_' in var.name]
@@ -212,18 +236,6 @@ class ACGAN(object):
         print(d_vars)
         print(g_vars)
         print(q_vars)
-
-
-
-        print(2)
-        # optimizers
-        # with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-        #     self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1) \
-        #         .minimize(self.d_loss, var_list=d_vars)
-        #     self.g_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-        #         .minimize(self.g_loss, var_list=g_vars)
-        #     self.q_optim = tf.train.AdamOptimizer(self.learning_rate * 5, beta1=self.beta1) \
-        #         .minimize(self.q_loss, var_list=q_vars)
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
             self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
@@ -247,9 +259,9 @@ class ACGAN(object):
             print(4)
 
 
-            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss)
-            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss)
-            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss)
+            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss,d_vars)
+            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss,g_vars)
+            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss,q_vars)
 
 
             print(self.grads_variables_D)
@@ -257,12 +269,12 @@ class ACGAN(object):
             print(self.grads_variables_Q)
 
             self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
-            print('New Q_grad:',self.q_grads )
+            print('New Q_grad:',self.q_grads)
 
 
             self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
             self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.grads_variables_Q)
+            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
 
 
         """" Testing """
