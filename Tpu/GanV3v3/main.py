@@ -1,29 +1,47 @@
 # from Tpu.GanV3.gan import ACGAN
 # from Tpu.GanV3.utils import show_all_variables
-# import tensorflow as tf
 
-# from Tpu.GanV3v3.gan import ACGAN
-# from Tpu.GanV3v3.utils import show_all_variables
+from Tpu.GanV3v3.gan import ACGAN
+
 
 from gan import ACGAN
 from utils import show_all_variables
 
 import tensorflow as tf
+import sys
+import os
 
-with tf.Session() as sess:
+if __name__ == "__main__":
 
-    #gan = ACGAN(sess,2,128,100,"mnist",'saved_model/','results/','logs', tpu=True)
-    gan = ACGAN(sess, 1, 128, 100, "cifar10", 'saved_model/', 'results/', 'logs', tpu=True)
+    # Get all the parameters for the training.
 
-    # build graph
-    gan.build_model()
+    data_set = sys.argv[1]
+    training_time = int(sys.argv[2])
+    batch_size = int(sys.argv[3])
+    tpu = bool(sys.argv[4])
 
-    # show network architecture
-    show_all_variables()
+    if not os.path.exists('saved_model/'):
+        os.makedirs('saved_model/')
 
-    # launch the graph in a session
-    gan.train()
-    print(" [*] Training finished!")
+    if not os.path.exists('results/'):
+        os.makedirs('results/')
+
+    if not os.path.exists('logs'):
+        os.makedirs('logs')
+
+    with tf.Session() as sess:
+
+        gan = ACGAN(sess, batch_size, batch_size, 100, data_set, 'saved_model/', 'results/', 'logs', tpu=tpu)
+
+        # build graph
+        gan.build_model()
+
+        # show network architecture
+        # show_all_variables()
+
+        # launch the graph in a session
+        gan.train_by_time(training_time)
+        print(" [*] Training finished!")
 
 
 

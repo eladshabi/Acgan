@@ -5,11 +5,9 @@ import os
 import time
 import tensorflow as tf
 import numpy as np
+from datetime import datetime, timedelta
 
-# from Tpu.GanV3.ops import *
-# from Tpu.GanV3.utils import *
-#
-# from tensorflow.contrib.mixed_precision import FixedLossScaleManager,LossScaleOptimizer
+
 
 
 from ops import *
@@ -225,23 +223,17 @@ class ACGAN(object):
 
         """ Training """
         # divide trainable variables into a group for D and a group for G
-        print(1)
-        t_vars = tf.trainable_variables()
 
+        t_vars = tf.trainable_variables()
 
         d_vars = [var for var in t_vars if 'd_' in var.name]
         g_vars = [var for var in t_vars if 'g_' in var.name]
         q_vars = [var for var in t_vars if ('d_' in var.name) or ('c_' in var.name) or ('g_' in var.name)]
 
-        print(d_vars)
-        print(g_vars)
-        print(q_vars)
-
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+
             self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-
             self.g_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
-
             self.q_optim = tf.train.AdamOptimizer(self.learning_rate , beta1=self.beta1)
 
             scale = 128
@@ -258,24 +250,15 @@ class ACGAN(object):
 
             print(4)
 
-
             self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss,d_vars)
             self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss,g_vars)
             self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss,q_vars)
 
-
-            print(self.grads_variables_D)
-            print(self.grads_variables_G)
-            print(self.grads_variables_Q)
-
             self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
-            print('New Q_grad:',self.q_grads)
-
 
             self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
             self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
             self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
-
 
         """" Testing """
         # for test
@@ -377,6 +360,58 @@ class ACGAN(object):
         # save model for final step
         self.save(self.checkpoint_dir, counter)
 
+    def train_by_time(self, train_time):
+        def saver():
+            self.sample_z = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
+            self.test_codes = self.data_y[0:self.batch_size]
+
+            samples = self.sess.run(self.fake_images,
+                                    feed_dict={self.z: self.sample_z, self.y: self.test_codes})
+            tot_num_samples = min(self.sample_num, self.batch_size)
+            manifold_h = int(np.floor(np.sqrt(tot_num_samples)))
+            manifold_w = int(np.floor(np.sqrt(tot_num_samples)))
+            save_images(samples[:manifold_h * manifold_w, :, :, :], [manifold_h, manifold_w], './' + check_folder(
+                self.result_dir + '/' + self.model_dir) + '/' + self.model_name + 'final.png')
+
+
+        def run_batch(idx):
+            batch_images = self.data_X[idx * self.batch_size:(idx + 1) * self.batch_size]
+            batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
+
+            batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
+
+            # update D network
+            _, summary_str, d_loss = self.sess.run([self.training_step_op_D, self.d_sum, self.d_loss],
+                                                   feed_dict={self.inputs: batch_images, self.y: batch_codes,
+                                                              self.z: batch_z})
+
+            # update G & Q network
+            _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
+                [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
+                feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
+
+            print("Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: %.8f, g_loss: %.8f" \
+                  % (epoch, idx, self.num_batches, datetime.now() - start_time, d_loss, g_loss))
+
+        # initialize all variables
+        tf.global_variables_initializer().run()
+
+        epoch = 0
+        batch_c = 0
+
+        start_time = datetime.now()
+        end_time = start_time + timedelta(seconds=train_time)
+
+        while datetime.now() < end_time:
+
+            if batch_c > self.num_batches:
+                batch_c = 0
+                epoch += 1
+
+            run_batch(batch_c)
+            batch_c += 1
+
+        saver()
     def visualize_results(self, epoch):
         tot_num_samples = min(self.sample_num, self.batch_size)
         image_frame_dim = int(np.floor(np.sqrt(tot_num_samples)))
