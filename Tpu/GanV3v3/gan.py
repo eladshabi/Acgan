@@ -441,8 +441,9 @@ class ACGAN(object):
             manifold_h = int(np.floor(np.sqrt(tot_num_samples)))
             manifold_w = int(np.floor(np.sqrt(tot_num_samples)))
             save_images(samples[:manifold_h * manifold_w, :, :, :], [manifold_h, manifold_w], './' + check_folder(
-                self.result_dir + '/' + self.model_dir) + '/' + self.model_name + 'final.png')
-            pd.DataFrame(np.array(logs)).to_csv('logs/losses '+str(self.batch_size)+'.csv')
+                self.result_dir + '/' + self.model_dir) + '/' + self.model_name + str(train_time) + 'final.png')
+
+            pd.DataFrame(np.array(logs)).to_csv('./'+self.log_dir + str(self.batch_size) + ' time' + str(train_time) + '.csv')
 
         def run_batch(idx):
 
