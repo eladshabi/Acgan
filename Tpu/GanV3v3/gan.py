@@ -404,7 +404,7 @@ class ACGAN(object):
 
         while datetime.now() < end_time:
 
-            if batch_c > self.num_batches:
+            if batch_c == self.num_batches:
                 batch_c = 0
                 epoch += 1
 
