@@ -437,10 +437,13 @@ class ACGAN(object):
             pd.DataFrame(np.array(logs)).to_csv('logs/losses '+self.batch_size+'.csv')
 
         def run_batch(idx):
-            start = datetime.now()
+
+
+
             batch_images = self.data_X[idx * self.batch_size:(idx + 1) * self.batch_size]
             batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
+            start = datetime.now()
             batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
             # update D network
@@ -452,6 +455,7 @@ class ACGAN(object):
             _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
                 [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                 feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
+
             end = datetime.now()
 
             return [str(end - start), d_loss, g_loss]
