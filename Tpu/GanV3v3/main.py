@@ -4,24 +4,27 @@
 #from Tpu.GanV3v3.gan import ACGAN
 
 from gan import ACGAN
-from utils import show_all_variables
 
 import tensorflow as tf
 import sys
 import os
 
 
-def open_folders(mixed):
+def open_folders(experiment_name, description):
 
-    if mixed:
-        models = 'saved_model/Mixed/'
-        results = 'results/Mixed/'
-        logs = 'logs/Mixed/'
+    base_dir = os.path.join('/tmp', experiment_name )
+    models = os.path.join(base_dir, 'saved_model/')
+    results = os.path.join(base_dir, 'results/')
+    logs =  os.path.join(base_dir, 'logs/')
 
-    else:
-        models = 'saved_model/FP/'
-        results = 'results/FP/'
-        logs = 'logs/FP/'
+
+    print("base dir :", base_dir)
+    print("models dir :", models)
+    print("results dir :", results)
+    print("logs dir :", logs)
+
+    with open(os.path.join(base_dir, 'description.txt'), 'r') as f:
+        f.write(description)
 
     if not os.path.exists(models):
         os.makedirs(models)
@@ -43,8 +46,16 @@ if __name__ == "__main__":
     training_time = int(sys.argv[2])
     batch_size = int(sys.argv[3])
     tpu = bool(int(sys.argv[4]))
+    experiment_name = sys.argv[5]
 
-    model_file, results_file, logs_file = open_folders(tpu)
+    experiment_description = dict()
+    experiment_description['training_time'] = training_time
+    experiment_description['batch_size'] = batch_size
+    experiment_description['tpu'] = tpu
+    experiment_description['experiment_name'] = experiment_name
+    experiment_description['data_set'] = data_set
+
+    model_file, results_file, logs_file = open_folders(experiment_name, str(experiment_description))
 
     with tf.Session() as sess:
 
