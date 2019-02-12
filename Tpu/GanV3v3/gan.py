@@ -32,8 +32,9 @@ class ACGAN(object):
         self.log_dir = log_dir
         self.epoch = epoch
         self.batch_size = batch_size
+        self.mixed = tpu
 
-        if tpu:
+        if self.mixed:
             self.dtype = tf.float16
             self.nptype = np.float16
         else:
@@ -67,7 +68,7 @@ class ACGAN(object):
 
             # load quick draw
             #self.data_X, self.data_y = load_quick_draw(self.dataset_name, tpu)
-            self.data_X, self.data_y = load_cifar10(tpu)
+            self.data_X, self.data_y = load_cifar10(self.mixed)
 
             # get number of batches for a single epoch
             self.num_batches = len(self.data_X) // self.batch_size
@@ -76,7 +77,7 @@ class ACGAN(object):
 
     def classifier(self, x, is_training=True, reuse=False):
 
-        if self.tpu:
+        if self.mixed:
             with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
                 net = fc(x, 128, scope='c_fc1', activation_fn=None)
 
@@ -110,7 +111,7 @@ class ACGAN(object):
 
     def discriminator(self, x, is_training=True, reuse=False):
 
-        if self.tpu:
+        if self.mixed:
 
             with tf.variable_scope("discriminator", reuse=reuse, custom_getter=float32_variable_storage_getter):
                 # Cast the input to float16
@@ -170,7 +171,7 @@ class ACGAN(object):
 
     def generator(self, z, y, is_training=True, reuse=False):
 
-        if self.tpu:
+        if self.mixed:
 
             with tf.variable_scope("generator", reuse=reuse, custom_getter=float32_variable_storage_getter):
                 # merge noise and code
@@ -297,29 +298,39 @@ class ACGAN(object):
 
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
 
-            self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-            self.g_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
-            self.q_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+            if self.mixed:
 
-            scale = 128
+                self.d_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+                self.g_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
+                self.q_optim = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1)
 
-            self.loss_scale_manager_D = FixedLossScaleManager(scale)
-            self.loss_scale_manager_G = FixedLossScaleManager(scale)
-            self.loss_scale_manager_Q = FixedLossScaleManager(scale)
+                scale = 128
 
-            self.loss_scale_optimizer_D = LossScaleOptimizer(self.d_optim, self.loss_scale_manager_D)
-            self.loss_scale_optimizer_G = LossScaleOptimizer(self.g_optim, self.loss_scale_manager_G)
-            self.loss_scale_optimizer_Q = LossScaleOptimizer(self.q_optim, self.loss_scale_manager_Q)
+                self.loss_scale_manager_D = FixedLossScaleManager(scale)
+                self.loss_scale_manager_G = FixedLossScaleManager(scale)
+                self.loss_scale_manager_Q = FixedLossScaleManager(scale)
 
-            self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss,d_vars)
-            self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss,g_vars)
-            self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss,q_vars)
+                self.loss_scale_optimizer_D = LossScaleOptimizer(self.d_optim, self.loss_scale_manager_D)
+                self.loss_scale_optimizer_G = LossScaleOptimizer(self.g_optim, self.loss_scale_manager_G)
+                self.loss_scale_optimizer_Q = LossScaleOptimizer(self.q_optim, self.loss_scale_manager_Q)
 
-            self.q_grads = [(g,v) for (g,v) in self.grads_variables_Q if g is not None]
+                self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(v)
+                self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
+                self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
 
-            self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
-            self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
-            self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
+                self.q_grads = [(g, v) for (g, v) in self.grads_variables_Q if g is not None]
+
+                self.training_step_op_D = self.loss_scale_optimizer_D.apply_gradients(self.grads_variables_D)
+                self.training_step_op_G = self.loss_scale_optimizer_G.apply_gradients(self.grads_variables_G)
+                self.training_step_op_Q = self.loss_scale_optimizer_Q.apply_gradients(self.q_grads)
+
+            else:
+
+                self.training_step_op_D = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(loss=self.d_loss, var_list=d_vars)
+                self.training_step_op_G = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(loss=self.g_loss, var_list=g_vars)
+                self.training_step_op_Q = tf.train.AdamOptimizer(self.learning_rate, beta1=self.beta1).minimize(loss=self.q_loss, var_list=q_vars)
+
+
 
         """" Testing """
         # for test
@@ -438,12 +449,11 @@ class ACGAN(object):
 
         def run_batch(idx):
 
-
-
             batch_images = self.data_X[idx * self.batch_size:(idx + 1) * self.batch_size]
             batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
             start = datetime.now()
+
             batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
             # update D network
@@ -482,6 +492,7 @@ class ACGAN(object):
             batch_c += 1
 
         save_logs(losses)
+
     def visualize_results(self, epoch):
         tot_num_samples = min(self.sample_num, self.batch_size)
         image_frame_dim = int(np.floor(np.sqrt(tot_num_samples)))
