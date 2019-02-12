@@ -23,7 +23,7 @@ def open_folders(experiment_name, description):
     print("results dir :", results)
     print("logs dir :", logs)
 
-    with open(os.path.join(base_dir, 'description.txt'), 'r') as f:
+    with open(os.path.join(base_dir, 'description.txt'), 'w') as f:
         f.write(description)
 
     if not os.path.exists(models):
