@@ -390,8 +390,8 @@ class ACGAN(object):
                 [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                 feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
 
-            print("Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: %.8f, g_loss: %.8f" \
-                  % (epoch, idx, self.num_batches, datetime.now() - start_time, d_loss, g_loss))
+            print("Epoch: [%2d] [%4d/%4d] time: %s, d_loss: %.8f, g_loss: %.8f" \
+                  % (epoch, idx, self.num_batches, str(datetime.now() - start_time), d_loss, g_loss))
 
         # initialize all variables
         tf.global_variables_initializer().run()

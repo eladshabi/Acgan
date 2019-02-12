@@ -1,7 +1,7 @@
 # from Tpu.GanV3.gan import ACGAN
 # from Tpu.GanV3.utils import show_all_variables
 
-from Tpu.GanV3v3.gan import ACGAN
+#from Tpu.GanV3v3.gan import ACGAN
 
 
 from gan import ACGAN
