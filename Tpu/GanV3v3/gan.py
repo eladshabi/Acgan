@@ -314,7 +314,7 @@ class ACGAN(object):
                 self.loss_scale_optimizer_G = LossScaleOptimizer(self.g_optim, self.loss_scale_manager_G)
                 self.loss_scale_optimizer_Q = LossScaleOptimizer(self.q_optim, self.loss_scale_manager_Q)
 
-                self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(v)
+                self.grads_variables_D = self.loss_scale_optimizer_D.compute_gradients(self.d_loss, d_vars)
                 self.grads_variables_G = self.loss_scale_optimizer_G.compute_gradients(self.g_loss, g_vars)
                 self.grads_variables_Q = self.loss_scale_optimizer_Q.compute_gradients(self.q_loss, q_vars)
 
