@@ -450,7 +450,7 @@ class ACGAN(object):
             batch_images = self.data_X[idx * self.batch_size:(idx + 1) * self.batch_size]
             batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
-            start = datetime.now()
+
 
             batch_z = np.random.uniform(-1, 1, [self.batch_size, self.z_dim]).astype(self.nptype)
 
@@ -464,9 +464,7 @@ class ACGAN(object):
                 [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                 feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
 
-            end = datetime.now()
-
-            return [str(end - start), d_loss, g_loss]
+            return [str(datetime.now()), d_loss, g_loss]
 
         # initialize all variables
         tf.global_variables_initializer().run()
