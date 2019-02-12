@@ -148,7 +148,6 @@ class ACGAN(object):
                 return out, out_logit, net
 
         else:
-
             with tf.variable_scope("discriminator", reuse=reuse):
 
                 net = conv2d(x, 64, 4, 4, 2, 2, name='d_conv1', data_type=self.dtype)
@@ -172,7 +171,6 @@ class ACGAN(object):
     def generator(self, z, y, is_training=True, reuse=False):
 
         if self.mixed:
-
             with tf.variable_scope("generator", reuse=reuse, custom_getter=float32_variable_storage_getter):
                 # merge noise and code
                 z = concat([z, y], 1)
@@ -213,8 +211,7 @@ class ACGAN(object):
                 return out
 
         else:
-
-            with tf.variable_scope("generator", reuse=reuse, custom_getter=float32_variable_storage_getter):
+            with tf.variable_scope("generator", reuse=reuse):
 
                 # merge noise and code
                 z = concat([z, y], 1)
