@@ -3,13 +3,37 @@
 
 #from Tpu.GanV3v3.gan import ACGAN
 
-
 from gan import ACGAN
 from utils import show_all_variables
 
 import tensorflow as tf
 import sys
 import os
+
+
+def open_folders(mixed):
+
+    if mixed:
+        models = 'saved_model/Mixed/'
+        results = 'results/Mixed/'
+        logs = 'logs/FP/Mixed'
+
+    else:
+        models = 'saved_model/FP/'
+        results = 'results/FP/'
+        logs = 'logs/FP/'
+
+    if not os.path.exists(models):
+        os.makedirs(models)
+
+    if not os.path.exists(results):
+        os.makedirs(results)
+
+    if not os.path.exists(logs):
+        os.makedirs(logs)
+
+    return models, results, logs
+
 
 if __name__ == "__main__":
 
@@ -18,26 +42,16 @@ if __name__ == "__main__":
     data_set = sys.argv[1]
     training_time = int(sys.argv[2])
     batch_size = int(sys.argv[3])
-    tpu = bool(sys.argv[4])
+    tpu = bool(int(sys.argv[4]))
 
-    if not os.path.exists('saved_model/'):
-        os.makedirs('saved_model/')
-
-    if not os.path.exists('results/'):
-        os.makedirs('results/')
-
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
+    model_file, results_file, logs_file = open_folders(tpu)
 
     with tf.Session() as sess:
 
-        gan = ACGAN(sess, batch_size, batch_size, 100, data_set, 'saved_model/', 'results/', 'logs', tpu=tpu)
+        gan = ACGAN(sess, batch_size, batch_size, 100, data_set, model_file, results_file, logs_file, tpu=tpu)
 
         # build graph
         gan.build_model()
-
-        # show network architecture
-        # show_all_variables()
 
         # launch the graph in a session
         gan.train_by_time(training_time)
