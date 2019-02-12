@@ -400,7 +400,7 @@ class ACGAN(object):
         batch_c = 0
 
         start_time = datetime.now()
-        end_time = start_time + timedelta(seconds=train_time)
+        end_time = start_time + timedelta(minutes=train_time)
 
         while datetime.now() < end_time:
 
