@@ -6,6 +6,7 @@ import time
 import tensorflow as tf
 import numpy as np
 from datetime import datetime, timedelta
+import pandas as pd
 
 
 
@@ -361,7 +362,8 @@ class ACGAN(object):
         self.save(self.checkpoint_dir, counter)
 
     def train_by_time(self, train_time):
-        def saver():
+
+        def save_logs(logs):
             self.sample_z = np.random.uniform(-1, 1, size=(self.batch_size, self.z_dim))
             self.test_codes = self.data_y[0:self.batch_size]
 
@@ -372,9 +374,10 @@ class ACGAN(object):
             manifold_w = int(np.floor(np.sqrt(tot_num_samples)))
             save_images(samples[:manifold_h * manifold_w, :, :, :], [manifold_h, manifold_w], './' + check_folder(
                 self.result_dir + '/' + self.model_dir) + '/' + self.model_name + 'final.png')
-
+            pd.DataFrame(np.array(logs)).to_csv('logs/losses.csv')
 
         def run_batch(idx):
+
             batch_images = self.data_X[idx * self.batch_size:(idx + 1) * self.batch_size]
             batch_codes = self.data_y[idx * self.batch_size:(idx + 1) * self.batch_size]
 
@@ -390,8 +393,7 @@ class ACGAN(object):
                 [self.training_step_op_G, self.g_sum, self.g_loss, self.training_step_op_Q, self.q_sum, self.q_loss],
                 feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
 
-            print("Epoch: [%2d] [%4d/%4d] time: %s, d_loss: %.8f, g_loss: %.8f" \
-                  % (epoch, idx, self.num_batches, str(datetime.now() - start_time), d_loss, g_loss))
+            return [str(datetime.now() - start_time), d_loss, g_loss]
 
         # initialize all variables
         tf.global_variables_initializer().run()
@@ -402,16 +404,19 @@ class ACGAN(object):
         start_time = datetime.now()
         end_time = start_time + timedelta(minutes=train_time)
 
+        losses = []
+
         while datetime.now() < end_time:
 
             if batch_c == self.num_batches:
                 batch_c = 0
                 epoch += 1
 
-            run_batch(batch_c)
+            batch_info = run_batch(batch_c)
+            losses.append(batch_info)
             batch_c += 1
 
-        saver()
+        save_logs(losses)
     def visualize_results(self, epoch):
         tot_num_samples = min(self.sample_num, self.batch_size)
         image_frame_dim = int(np.floor(np.sqrt(tot_num_samples)))
