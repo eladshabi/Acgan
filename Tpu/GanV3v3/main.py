@@ -16,7 +16,7 @@ def open_folders(mixed):
     if mixed:
         models = 'saved_model/Mixed/'
         results = 'results/Mixed/'
-        logs = 'logs/Mixed'
+        logs = 'logs/Mixed/'
 
     else:
         models = 'saved_model/FP/'
