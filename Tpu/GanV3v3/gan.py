@@ -78,7 +78,7 @@ class ACGAN(object):
 
             # load quick draw
             elif dataset_name == "quick_draw":
-                self.data_X, self.data_y = load_quick_draw(self.dataset_name, self.nptype)
+                self.data_X, self.data_y = load_quick_draw('./'+self.dataset_name, self.nptype)
 
             elif dataset_name == "cifar10":
                 self.data_X, self.data_y = load_cifar10(self.mixed)
