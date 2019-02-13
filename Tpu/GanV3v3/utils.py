@@ -214,7 +214,7 @@ def load_quick_draw(path, nptype):
 
     y_vec = np.zeros((len(labels), 10), dtype=np.int32)
     for i, label in enumerate(labels):
-        y_vec[i, labels[i]] = 1.0
+        y_vec[i, labels[i]] = 1
 
     #labels = labels.reshape(-1, 1)
     return images / 255., y_vec
