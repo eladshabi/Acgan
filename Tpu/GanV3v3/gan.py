@@ -233,7 +233,7 @@ class ACGAN(object):
                 net = bn(net, is_training=is_training, scope='g_bn1')
                 net = tf.nn.relu(net)
 
-                net = fc(net, 128 * 8 * 8, scope='g_fc2', activation_fn=None)
+                net = fc(net, 128 * 7 * 7, scope='g_fc2', activation_fn=None)# fot 32x32x32 change to 128*8*8
                 net = bn(net, is_training=is_training, scope='g_bn2')
                 net = tf.nn.relu(net)
 
