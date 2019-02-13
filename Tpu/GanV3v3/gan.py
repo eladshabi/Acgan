@@ -196,7 +196,7 @@ class ACGAN(object):
                 # Leveraging the tensors core for fully connected weight.
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.relu(net)
-                net = fc(net, 128 * 8 * 8, scope='g_fc2', activation_fn=None)
+                net = fc(net, 128 * 7 * 7, scope='g_fc2', activation_fn=None)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
