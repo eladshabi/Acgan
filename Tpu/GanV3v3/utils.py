@@ -212,7 +212,7 @@ def load_quick_draw(path, nptype):
     np.random.seed(seed)
     np.random.shuffle(labels)
 
-    y_vec = np.zeros((len(labels), 10), dtype=np.float)
+    y_vec = np.zeros((len(labels), 10), dtype=np.int32)
     for i, label in enumerate(labels):
         y_vec[i, labels[i]] = 1.0
 
