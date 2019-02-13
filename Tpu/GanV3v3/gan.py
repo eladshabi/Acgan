@@ -206,7 +206,7 @@ class ACGAN(object):
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.relu(net)
                 net = tf.reshape(net, [self.batch_size, 8, 8, 128])
-                net = deconv2d(net, [self.batch_size, self.output_height / 2, self.output_width / 2, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -238,7 +238,7 @@ class ACGAN(object):
                 net = tf.nn.relu(net)
 
                 net = tf.reshape(net, [self.batch_size, 8, 8, 128])
-                net = deconv2d(net, [self.batch_size, self.output_height / 2, self.output_width / 2, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
                 net = bn(net, is_training=is_training, scope='g_bn3')
                 net = tf.nn.relu(net)
 
