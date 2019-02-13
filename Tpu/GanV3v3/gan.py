@@ -42,15 +42,24 @@ class ACGAN(object):
             self.nptype = np.float32
 
         if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name=='quick_draw' or dataset_name=="cifar10":
+
             # parameters
-            self.input_height = 32
-            self.input_width = 32
-            self.output_height = 32
-            self.output_width = 32
+            if dataset_name == "cifar10":
+                self.input_height = 32
+                self.input_width = 32
+                self.output_height = 32
+                self.output_width = 32
+                self.c_dim = 3
+
+            else:
+                self.input_height = 28
+                self.input_width = 28
+                self.output_height = 28
+                self.output_width = 28
+                self.c_dim = 1
 
             self.z_dim = z_dim         # dimension of noise-vector
             self.y_dim = 10         # dimension of code-vector (label)
-            self.c_dim = 3
 
             # train
             self.learning_rate = 0.0002
@@ -64,11 +73,15 @@ class ACGAN(object):
             self.len_continuous_code = 2  # gaussian distribution (e.g. rotation, thickness)
 
             # load mnist
-            #self.data_X, self.data_y = load_mnist(self.dataset_name)
+            if dataset_name == "mnist":
+                self.data_X, self.data_y = load_mnist(self.dataset_name, self.nptype)
 
             # load quick draw
-            #self.data_X, self.data_y = load_quick_draw(self.dataset_name, tpu)
-            self.data_X, self.data_y = load_cifar10(self.mixed)
+            elif dataset_name == "quick_draw":
+                self.data_X, self.data_y = load_quick_draw(self.dataset_name, self.nptype)
+
+            elif dataset_name == "cifar10":
+                self.data_X, self.data_y = load_cifar10(self.mixed)
 
             # get number of batches for a single epoch
             self.num_batches = len(self.data_X) // self.batch_size
@@ -79,7 +92,7 @@ class ACGAN(object):
 
         if self.mixed:
             with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
-                net = fc(x, 128, scope='c_fc1', activation_fn=None)
+                net = fc(x, 128, scope='c_fc1', activation_fn=tf.nn.relu)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -88,7 +101,7 @@ class ACGAN(object):
                 # Leveraging the tensors core for fully connected weight.
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
+                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=tf.nn.relu)
 
                 # Softmax should should be calculate as float32
                 out_logit = tf.cast(out_logit, tf.float32)
@@ -98,12 +111,12 @@ class ACGAN(object):
         else:
             with tf.variable_scope("classifier", reuse=reuse):
 
-                net = fc(x, 128, scope='c_fc1', activation_fn=None)
+                net = fc(x, 128, scope='c_fc1', activation_fn=tf.nn.relu)
 
                 net = bn(net, is_training=is_training, scope='c_bn1')
 
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
+                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=tf.nn.relu)
 
                 out = tf.nn.softmax(out_logit)
 
@@ -130,7 +143,7 @@ class ACGAN(object):
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
                 net = tf.reshape(net, [self.batch_size, -1])
-                net = fc(net, 1024, scope='d_fc3', activation_fn=None)
+                net = fc(net, 1024, scope='d_fc3', activation_fn=tf.nn.relu)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -139,7 +152,7 @@ class ACGAN(object):
                 # Leveraging the tensors core for fully connected weight.
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
+                out_logit = fc(net, 1, scope='d_fc4', activation_fn=tf.nn.relu)
 
                 # Sigmoid should be calculated as type of float32
                 out_logit = tf.cast(out_logit, tf.float32)
@@ -158,12 +171,12 @@ class ACGAN(object):
                 net = tf.nn.leaky_relu(net, alpha=0.2)
 
                 net = tf.reshape(net, [self.batch_size, -1])
-                net = fc(net, 1024, scope='d_fc3', activation_fn=None)
+                net = fc(net, 1024, scope='d_fc3', activation_fn=tf.nn.relu)
 
                 net = bn(net, is_training=is_training, scope='d_bn3')
                 net = tf.nn.leaky_relu(net, alpha=0.2)
 
-                out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
+                out_logit = fc(net, 1, scope='d_fc4', activation_fn=tf.nn.relu)
                 out = tf.nn.sigmoid(out_logit)
 
                 return out, out_logit, net
@@ -193,7 +206,7 @@ class ACGAN(object):
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.relu(net)
                 net = tf.reshape(net, [self.batch_size, 8, 8, 128])
-                net = deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, self.output_height / 2, self.output_width / 2, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -202,7 +215,7 @@ class ACGAN(object):
                 # Leveraging the tensors core
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.relu(net)
-                net = deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, self.output_height, self.output_width, self.c_dim], 4, 4, 2, 2, name='g_dc4', data_type=self.dtype)
 
                 # Sigmoid should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -225,11 +238,11 @@ class ACGAN(object):
                 net = tf.nn.relu(net)
 
                 net = tf.reshape(net, [self.batch_size, 8, 8, 128])
-                net = deconv2d(net, [self.batch_size, 16, 16, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, self.output_height / 2, self.output_width / 2, 64], 4, 4, 2, 2, name='g_dc3', data_type=self.dtype)
                 net = bn(net, is_training=is_training, scope='g_bn3')
                 net = tf.nn.relu(net)
 
-                net = deconv2d(net, [self.batch_size, 32, 32, 3], 4, 4, 2, 2, name='g_dc4', data_type=self.dtype)
+                net = deconv2d(net, [self.batch_size, self.output_height, self.output_width, self.c_dim], 4, 4, 2, 2, name='g_dc4', data_type=self.dtype)
 
                 out = tf.nn.sigmoid(net)
 

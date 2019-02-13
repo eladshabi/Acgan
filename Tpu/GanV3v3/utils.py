@@ -16,16 +16,14 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 
-
-
-def load_mnist(dataset_name):
+def load_mnist(dataset_name, nptype):
     data_dir = os.path.join("./data", dataset_name)
 
     def extract_data(filename, num_data, head_size, data_size):
         with gzip.open(filename) as bytestream:
             bytestream.read(head_size)
             buf = bytestream.read(data_size * num_data)
-            data = np.frombuffer(buf, dtype=np.uint8).astype(np.float)
+            data = np.frombuffer(buf, dtype=np.uint8).astype(nptype)
         return data
 
     data = extract_data(data_dir + '/train-images-idx3-ubyte.gz', 60000, 16, 28 * 28)
@@ -44,7 +42,7 @@ def load_mnist(dataset_name):
     teY = np.asarray(teY)
 
     X = np.concatenate((trX, teX), axis=0)
-    y = np.concatenate((trY, teY), axis=0).astype(np.int)
+    y = np.concatenate((trY, teY), axis=0).astype(np.int32)
 
     seed = 547
     np.random.seed(seed)
@@ -52,7 +50,7 @@ def load_mnist(dataset_name):
     np.random.seed(seed)
     np.random.shuffle(y)
 
-    y_vec = np.zeros((len(y), 10), dtype=np.float)
+    y_vec = np.zeros((len(y), 10), dtype=nptype)
     for i, label in enumerate(y):
         y_vec[i, y[i]] = 1.0
 
@@ -158,7 +156,7 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
     """Custom variable getter that forces trainable variables to be stored in
     float32 precision and then casts them to the training precision.
     """
-    print("in")
+
     storage_dtype = tf.float32 if trainable else dtype
 
     variable = getter(name, shape, dtype=storage_dtype,
@@ -169,7 +167,6 @@ def float32_variable_storage_getter(getter, name, shape=None, dtype=None,
         variable = tf.cast(variable, dtype)
 
 
-    print("res: ",variable)
     return variable
 
 
@@ -190,7 +187,7 @@ def get_name(name):
         }).get(name)
 
 
-def load_quick_draw(path, tpu=False):
+def load_quick_draw(path, nptype):
     images = []
     labels = []
 
@@ -204,24 +201,23 @@ def load_quick_draw(path, tpu=False):
                 images.append(img.reshape(28, 28))
                 labels.append(c_num)
 
-    data = list(zip(images, labels))
-    random.shuffle(data)
-    images, labels = zip(*data)
 
-    if tpu:
-        images = np.array(images).astype(np.float16)
-    else:
-        images = np.array(images).astype(np.float32)
-    images = images / 255
+    images = np.array(images).astype(nptype)
     images = np.expand_dims(images, axis=3)
     labels = np.array(labels).astype(np.int32)
+
+    seed = 547
+    np.random.seed(seed)
+    np.random.shuffle(images)
+    np.random.seed(seed)
+    np.random.shuffle(labels)
 
     y_vec = np.zeros((len(labels), 10), dtype=np.float)
     for i, label in enumerate(labels):
         y_vec[i, labels[i]] = 1.0
 
     #labels = labels.reshape(-1, 1)
-    return images, y_vec
+    return images / 255., y_vec
 
 
 
