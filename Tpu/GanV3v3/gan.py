@@ -111,12 +111,12 @@ class ACGAN(object):
         else:
             with tf.variable_scope("classifier", reuse=reuse):
 
-                net = fc(x, 128, scope='c_fc1', activation_fn=tf.nn.relu)
+                net = fc(x, 128, scope='c_fc1', activation_fn=None)
 
                 net = bn(net, is_training=is_training, scope='c_bn1')
 
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=tf.nn.relu)
+                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
 
                 out = tf.nn.softmax(out_logit)
 
@@ -143,7 +143,7 @@ class ACGAN(object):
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
                 net = tf.reshape(net, [self.batch_size, -1])
-                net = fc(net, 1024, scope='d_fc3', activation_fn=tf.nn.relu)
+                net = fc(net, 1024, scope='d_fc3', activation_fn=None)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
@@ -171,12 +171,12 @@ class ACGAN(object):
                 net = tf.nn.leaky_relu(net, alpha=0.2)
 
                 net = tf.reshape(net, [self.batch_size, -1])
-                net = fc(net, 1024, scope='d_fc3', activation_fn=tf.nn.relu)
+                net = fc(net, 1024, scope='d_fc3', activation_fn=None)
 
                 net = bn(net, is_training=is_training, scope='d_bn3')
                 net = tf.nn.leaky_relu(net, alpha=0.2)
 
-                out_logit = fc(net, 1, scope='d_fc4', activation_fn=tf.nn.relu)
+                out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
                 out = tf.nn.sigmoid(out_logit)
 
                 return out, out_logit, net
