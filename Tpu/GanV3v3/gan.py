@@ -485,38 +485,21 @@ class ACGAN(object):
         epoch = 0
         batch_c = 0
 
-
-
         start_time = datetime.now()
         end_time = start_time + timedelta(minutes=train_time)
-
-        save_time= []
-        save_time.append(start_time + timedelta(minutes=6))
-        save_time.append(start_time + timedelta(minutes=7))
-        save_time.append(start_time + timedelta(minutes=9))
-        save_time.append(start_time + timedelta(minutes=10))
-
-
         losses = []
 
         while datetime.now() < end_time:
 
             if batch_c == self.num_batches:
-
                 batch_c = 0
                 epoch += 1
-
-                if datetime.now() < save_time[0]:
-
-                    c_time = datetime.now() - save_time.pop()
-                    self.visualize_results(c_time.seconds / 60)
-
-
 
             batch_info = run_batch(batch_c)
             losses.append(batch_info)
             batch_c += 1
 
+        self.visualize_results(epoch)
         save_logs(losses)
 
     def visualize_results(self, epoch):
