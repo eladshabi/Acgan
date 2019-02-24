@@ -101,7 +101,7 @@ class ACGAN(object):
                 # Leveraging the tensors core for fully connected weight.
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=tf.nn.relu)
+                out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
 
                 # Softmax should should be calculate as float32
                 out_logit = tf.cast(out_logit, tf.float32)
@@ -152,7 +152,7 @@ class ACGAN(object):
                 # Leveraging the tensors core for fully connected weight.
                 net = tf.cast(net, tf.float16)
                 net = tf.nn.leaky_relu(net, alpha=0.2)
-                out_logit = fc(net, 1, scope='d_fc4', activation_fn=tf.nn.relu)
+                out_logit = fc(net, 1, scope='d_fc4', activation_fn=None)
 
                 # Sigmoid should be calculated as type of float32
                 out_logit = tf.cast(out_logit, tf.float32)
