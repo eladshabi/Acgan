@@ -496,20 +496,11 @@ class ACGAN(object):
             if batch_c == self.num_batches:
                 batch_c = 0
                 epoch += 1
+                self.visualize_results(epoch)
 
             batch_info = run_batch(batch_c)
             losses.append(batch_info)
             batch_c += 1
-
-            if np.mod(counter, 300) == 0:
-                samples = self.sess.run(self.fake_images,
-                                        feed_dict={self.z: self.sample_z, self.y: self.test_codes})
-                tot_num_samples = min(self.sample_num, self.batch_size)
-                manifold_h = int(np.floor(np.sqrt(tot_num_samples)))
-                manifold_w = int(np.floor(np.sqrt(tot_num_samples)))
-                save_images(samples[:manifold_h * manifold_w, :, :, :], [manifold_h, manifold_w], './' + check_folder(
-                    self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_train_{:02d}_{:04d}.png'.format(
-                    epoch, idx))
 
         save_logs(losses)
 
