@@ -92,7 +92,7 @@ class ACGAN(object):
 
         if self.mixed:
             with tf.variable_scope("classifier", reuse=reuse, custom_getter=float32_variable_storage_getter):
-                net = fc(x, 128, scope='c_fc1', activation_fn=tf.nn.relu)
+                net = fc(x, 128, scope='c_fc1', activation_fn=None)
 
                 # Batch normalization should be calculated as type of float32
                 net = tf.cast(net, tf.float32)
