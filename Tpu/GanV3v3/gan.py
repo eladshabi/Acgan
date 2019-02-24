@@ -103,7 +103,7 @@ class ACGAN(object):
                 net = tf.nn.leaky_relu(net, alpha=0.2)
                 out_logit = fc(net, self.y_dim, scope='c_fc2', activation_fn=None)
 
-                # Softmax should should be calculate as float32
+                # Softmax should be calculate as float32
                 out_logit = tf.cast(out_logit, tf.float32)
                 out = tf.nn.softmax(out_logit)
 
@@ -233,7 +233,7 @@ class ACGAN(object):
                 net = bn(net, is_training=is_training, scope='g_bn1')
                 net = tf.nn.relu(net)
 
-                net = fc(net, 128 * 7 * 7, scope='g_fc2', activation_fn=None)# fot 32x32x32 change to 128*8*8
+                net = fc(net, 128 * 7 * 7, scope='g_fc2', activation_fn=None)
                 net = bn(net, is_training=is_training, scope='g_bn2')
                 net = tf.nn.relu(net)
 
